@@ -74,6 +74,110 @@
             };
             const motivationalQuotes = ["Каждая минута практики приближает тебя к мастерству.", "Каждый раз, когда берёшь гитару, играй как будто это последний раз. — Eric Clapton", "У тебя всего 12 нот. Делай с ними что хочешь. — Eddie Van Halen", "К чёрту правила. Если звучит правильно - значит так и есть. — Eddie Van Halen", "Расслабься. Будь собой. Играй много. — Joe Satriani"];
 
+            // Таблица уровней
+            const levelTable = [
+                { level: 1, totalXP: 0, nextLevelXP: 100, rank: 'Новичок' },
+                { level: 2, totalXP: 100, nextLevelXP: 150, rank: 'Новичок' },
+                { level: 3, totalXP: 250, nextLevelXP: 200, rank: 'Новичок' },
+                { level: 4, totalXP: 450, nextLevelXP: 250, rank: 'Новичок' },
+                { level: 5, totalXP: 700, nextLevelXP: 300, rank: 'Новичок' },
+                { level: 6, totalXP: 1000, nextLevelXP: 350, rank: 'Новичок' },
+                { level: 7, totalXP: 1350, nextLevelXP: 400, rank: 'Новичок' },
+                { level: 8, totalXP: 1750, nextLevelXP: 450, rank: 'Новичок' },
+                { level: 9, totalXP: 2200, nextLevelXP: 500, rank: 'Новичок' },
+                { level: 10, totalXP: 2700, nextLevelXP: 550, rank: 'Новичок' },
+                { level: 11, totalXP: 3250, nextLevelXP: 600, rank: 'Новичок' },
+                { level: 12, totalXP: 3850, nextLevelXP: 650, rank: 'Новичок' },
+                { level: 13, totalXP: 4500, nextLevelXP: 700, rank: 'Новичок' },
+                { level: 14, totalXP: 5200, nextLevelXP: 750, rank: 'Новичок' },
+                { level: 15, totalXP: 5950, nextLevelXP: 800, rank: 'Новичок' },
+                { level: 16, totalXP: 6750, nextLevelXP: 850, rank: 'Новичок' },
+                { level: 17, totalXP: 7600, nextLevelXP: 900, rank: 'Новичок' },
+                { level: 18, totalXP: 8500, nextLevelXP: 950, rank: 'Новичок' },
+                { level: 19, totalXP: 9450, nextLevelXP: 1000, rank: 'Новичок' },
+                { level: 20, totalXP: 10450, nextLevelXP: 1200, rank: 'Новичок' },
+                { level: 21, totalXP: 11650, nextLevelXP: 1400, rank: 'Ученик' },
+                { level: 22, totalXP: 13050, nextLevelXP: 1400, rank: 'Ученик' },
+                { level: 23, totalXP: 14450, nextLevelXP: 1400, rank: 'Ученик' },
+                { level: 24, totalXP: 15850, nextLevelXP: 1400, rank: 'Ученик' },
+                { level: 25, totalXP: 17250, nextLevelXP: 1400, rank: 'Ученик' },
+                { level: 26, totalXP: 18650, nextLevelXP: 1600, rank: 'Ученик' },
+                { level: 27, totalXP: 20250, nextLevelXP: 1600, rank: 'Ученик' },
+                { level: 28, totalXP: 21850, nextLevelXP: 1600, rank: 'Ученик' },
+                { level: 29, totalXP: 23450, nextLevelXP: 1600, rank: 'Ученик' },
+                { level: 30, totalXP: 25050, nextLevelXP: 1600, rank: 'Ученик' },
+                { level: 31, totalXP: 26650, nextLevelXP: 1800, rank: 'Ученик' },
+                { level: 32, totalXP: 28450, nextLevelXP: 1800, rank: 'Ученик' },
+                { level: 33, totalXP: 30250, nextLevelXP: 1800, rank: 'Ученик' },
+                { level: 34, totalXP: 32050, nextLevelXP: 1800, rank: 'Ученик' },
+                { level: 35, totalXP: 33850, nextLevelXP: 1800, rank: 'Ученик' },
+                { level: 36, totalXP: 35650, nextLevelXP: 2200, rank: 'Ученик' },
+                { level: 37, totalXP: 37850, nextLevelXP: 2200, rank: 'Ученик' },
+                { level: 38, totalXP: 40050, nextLevelXP: 2200, rank: 'Ученик' },
+                { level: 39, totalXP: 42250, nextLevelXP: 2200, rank: 'Ученик' },
+                { level: 40, totalXP: 44450, nextLevelXP: 2200, rank: 'Ученик' },
+                { level: 41, totalXP: 46650, nextLevelXP: 2500, rank: 'Практик' },
+                { level: 42, totalXP: 49150, nextLevelXP: 2500, rank: 'Практик' },
+                { level: 43, totalXP: 51650, nextLevelXP: 2500, rank: 'Практик' },
+                { level: 44, totalXP: 54150, nextLevelXP: 2500, rank: 'Практик' },
+                { level: 45, totalXP: 56650, nextLevelXP: 3000, rank: 'Практик' },
+                { level: 46, totalXP: 59650, nextLevelXP: 3000, rank: 'Практик' },
+                { level: 47, totalXP: 62650, nextLevelXP: 3000, rank: 'Практик' },
+                { level: 48, totalXP: 65650, nextLevelXP: 3000, rank: 'Практик' },
+                { level: 49, totalXP: 68650, nextLevelXP: 3000, rank: 'Практик' },
+                { level: 50, totalXP: 71650, nextLevelXP: 3500, rank: 'Практик' },
+                { level: 51, totalXP: 75150, nextLevelXP: 3500, rank: 'Практик' },
+                { level: 52, totalXP: 78650, nextLevelXP: 3500, rank: 'Практик' },
+                { level: 53, totalXP: 82150, nextLevelXP: 3500, rank: 'Практик' },
+                { level: 54, totalXP: 85650, nextLevelXP: 3500, rank: 'Практик' },
+                { level: 55, totalXP: 89150, nextLevelXP: 4000, rank: 'Практик' },
+                { level: 56, totalXP: 93150, nextLevelXP: 4000, rank: 'Практик' },
+                { level: 57, totalXP: 97150, nextLevelXP: 4000, rank: 'Практик' },
+                { level: 58, totalXP: 101150, nextLevelXP: 4000, rank: 'Практик' },
+                { level: 59, totalXP: 105150, nextLevelXP: 4000, rank: 'Практик' },
+                { level: 60, totalXP: 109150, nextLevelXP: 5000, rank: 'Практик' },
+                { level: 61, totalXP: 114150, nextLevelXP: 6000, rank: 'Виртуоз' },
+                { level: 62, totalXP: 120150, nextLevelXP: 6000, rank: 'Виртуоз' },
+                { level: 63, totalXP: 126150, nextLevelXP: 6000, rank: 'Виртуоз' },
+                { level: 64, totalXP: 132150, nextLevelXP: 6000, rank: 'Виртуоз' },
+                { level: 65, totalXP: 138150, nextLevelXP: 7000, rank: 'Виртуоз' },
+                { level: 66, totalXP: 145150, nextLevelXP: 7000, rank: 'Виртуоз' },
+                { level: 67, totalXP: 152150, nextLevelXP: 7000, rank: 'Виртуоз' },
+                { level: 68, totalXP: 159150, nextLevelXP: 7000, rank: 'Виртуоз' },
+                { level: 69, totalXP: 166150, nextLevelXP: 7000, rank: 'Виртуоз' },
+                { level: 70, totalXP: 173150, nextLevelXP: 8000, rank: 'Виртуоз' },
+                { level: 71, totalXP: 181150, nextLevelXP: 8000, rank: 'Виртуоз' },
+                { level: 72, totalXP: 189150, nextLevelXP: 8000, rank: 'Виртуоз' },
+                { level: 73, totalXP: 197150, nextLevelXP: 8000, rank: 'Виртуоз' },
+                { level: 74, totalXP: 205150, nextLevelXP: 8000, rank: 'Виртуоз' },
+                { level: 75, totalXP: 213150, nextLevelXP: 10000, rank: 'Виртуоз' },
+                { level: 76, totalXP: 223150, nextLevelXP: 10000, rank: 'Виртуоз' },
+                { level: 77, totalXP: 233150, nextLevelXP: 10000, rank: 'Виртуоз' },
+                { level: 78, totalXP: 243150, nextLevelXP: 10000, rank: 'Виртуоз' },
+                { level: 79, totalXP: 253150, nextLevelXP: 10000, rank: 'Виртуоз' },
+                { level: 80, totalXP: 263150, nextLevelXP: 12000, rank: 'Виртуоз' },
+                { level: 81, totalXP: 275150, nextLevelXP: 15000, rank: 'Маэстро' },
+                { level: 82, totalXP: 290150, nextLevelXP: 15000, rank: 'Маэстро' },
+                { level: 83, totalXP: 305150, nextLevelXP: 15000, rank: 'Маэстро' },
+                { level: 84, totalXP: 320150, nextLevelXP: 15000, rank: 'Маэстро' },
+                { level: 85, totalXP: 335150, nextLevelXP: 18000, rank: 'Маэстро' },
+                { level: 86, totalXP: 353150, nextLevelXP: 18000, rank: 'Маэстро' },
+                { level: 87, totalXP: 371150, nextLevelXP: 18000, rank: 'Маэстро' },
+                { level: 88, totalXP: 389150, nextLevelXP: 18000, rank: 'Маэстро' },
+                { level: 89, totalXP: 407150, nextLevelXP: 18000, rank: 'Маэстро' },
+                { level: 90, totalXP: 425150, nextLevelXP: 22000, rank: 'Маэстро' },
+                { level: 91, totalXP: 447150, nextLevelXP: 22000, rank: 'Маэстро' },
+                { level: 92, totalXP: 469150, nextLevelXP: 22000, rank: 'Маэстро' },
+                { level: 93, totalXP: 491150, nextLevelXP: 22000, rank: 'Маэстро' },
+                { level: 94, totalXP: 513150, nextLevelXP: 22000, rank: 'Маэстро' },
+                { level: 95, totalXP: 535150, nextLevelXP: 27000, rank: 'Маэстро' },
+                { level: 96, totalXP: 562150, nextLevelXP: 27000, rank: 'Маэстро' },
+                { level: 97, totalXP: 589150, nextLevelXP: 27000, rank: 'Маэстро' },
+                { level: 98, totalXP: 616150, nextLevelXP: 27000, rank: 'Маэстро' },
+                { level: 99, totalXP: 643150, nextLevelXP: 27000, rank: 'Маэстро' },
+                { level: 100, totalXP: 670150, nextLevelXP: 0, rank: 'Маэстро (Легенда)' }
+            ];
+
             useEffect(() => {
                 const loadData = async () => {
                     const telegramUser = tg.initDataUnsafe?.user;
@@ -133,45 +237,111 @@
             const getTop3Techniques = () => subcategories.techniques.map(t => ({ name: t, minutes: getTechniqueMinutes(t) })).filter(t => t.minutes > 0).sort((a, b) => b.minutes - a.minutes).slice(0, 3);
             const getSortedCategories = () => Object.entries(categories).map(([key, cat]) => ({ key, ...cat, minutes: getCategoryMinutes(key) })).sort((a, b) => b.minutes - a.minutes);
             
+            // Функции для системы уровней
+            const getExperience = () => {
+                const practiceXP = getTotalPracticeMinutes(); // 1 минута = 1 XP
+                
+                // Подсчет XP от достижений (исключая достижения за уровни чтобы не было циклической зависимости)
+                const streak = calculateStreak();
+                let achievementXP = 0;
+                
+                achievements.forEach(a => {
+                    // Пропускаем достижения за уровни
+                    if (a.id.startsWith('level_')) return;
+                    
+                    // Проверяем достижение
+                    const isUnlocked = a.checkFunc 
+                        ? a.checkFunc() 
+                        : a.type === 'streak' 
+                            ? streak >= a.threshold 
+                            : a.technique 
+                                ? getTechniqueMinutes(a.technique) >= a.threshold 
+                                : getCategoryMinutes(a.type) >= a.threshold;
+                    
+                    if (isUnlocked) {
+                        achievementXP += (a.xp || 0);
+                    }
+                });
+                
+                return practiceXP + achievementXP;
+            };
+            
+            const getLevelInfo = () => {
+                const totalXP = getExperience();
+                let currentLevel = 1;
+                let currentXP = totalXP;
+                
+                for (let i = 0; i < levelTable.length; i++) {
+                    if (totalXP >= levelTable[i].totalXP) {
+                        currentLevel = levelTable[i].level;
+                        currentXP = totalXP - levelTable[i].totalXP;
+                    } else {
+                        break;
+                    }
+                }
+                
+                const levelData = levelTable.find(l => l.level === currentLevel);
+                const nextLevelXP = levelData ? levelData.nextLevelXP : 0;
+                const rank = levelData ? levelData.rank : 'Новичок';
+                const progress = nextLevelXP > 0 ? (currentXP / nextLevelXP) * 100 : 100;
+                
+                return {
+                    level: currentLevel,
+                    rank: rank,
+                    currentXP: currentXP,
+                    nextLevelXP: nextLevelXP,
+                    totalXP: totalXP,
+                    progress: Math.min(progress, 100)
+                };
+            };
+            
             const checkTimeBasedAchievement = (startHour, endHour) => Object.keys(practiceData).some(k => practiceData[k].entries?.some(e => { const h = new Date(e.timestamp).getHours(); return startHour < endHour ? (h >= startHour && h < endHour) : (h >= startHour || h < endHour); }));
             const checkMarathonDay = (mins) => Object.keys(practiceData).some(k => getTotalMinutes(k) >= mins);
             const checkWeeklyMarathon = () => { const today = new Date(); for (let w = 0; w < 52; w++) { let valid = true; for (let d = 0; d < 7; d++) { const date = new Date(today); date.setDate(today.getDate() - w * 7 - d); if (getTotalMinutes(formatDateKey(date)) < 120) { valid = false; break; } } if (valid) return true; } return false; };
+            const check14DaysMarathon = () => { const today = new Date(); for (let w = 0; w < 52; w++) { let valid = true; for (let d = 0; d < 14; d++) { const date = new Date(today); date.setDate(today.getDate() - w * 14 - d); if (getTotalMinutes(formatDateKey(date)) < 120) { valid = false; break; } } if (valid) return true; } return false; };
+            const check28DaysMarathon = () => { const today = new Date(); for (let w = 0; w < 52; w++) { let valid = true; for (let d = 0; d < 28; d++) { const date = new Date(today); date.setDate(today.getDate() - w * 28 - d); if (getTotalMinutes(formatDateKey(date)) < 120) { valid = false; break; } } if (valid) return true; } return false; };
             const checkFullCycle = () => Object.keys(practiceData).some(k => new Set(practiceData[k].entries?.map(e => e.category)).size === 6);
             const checkAllTechniquesWeek = () => { const today = new Date(), used = new Set(); for (let d = 0; d < 7; d++) { const date = new Date(today); date.setDate(today.getDate() - d); practiceData[formatDateKey(date)]?.entries?.forEach(e => e.selectedTechniques?.forEach(t => used.add(t))); } return used.size === subcategories.techniques.length; };
 
             const achievements = [
-                { id: 'streak_10', name: '10 дней подряд', icon: '🔥', type: 'streak', threshold: 10 },
-                { id: 'streak_30', name: '30 дней подряд', icon: '⚡', type: 'streak', threshold: 30 },
-                { id: 'streak_100', name: '100 дней подряд', icon: '💎', type: 'streak', threshold: 100 },
-                { id: 'streak_365', name: 'Год практики', icon: '👑', type: 'streak', threshold: 365 },
-                { id: 'night_owl', name: 'Ночная сова', icon: '🦉', checkFunc: () => checkTimeBasedAchievement(22, 4) },
-                { id: 'early_bird', name: 'Жаворонок', icon: '🐦', checkFunc: () => checkTimeBasedAchievement(6, 9) },
-                { id: 'marathon_2h', name: 'Марафонец 2ч', icon: '🏃', checkFunc: () => checkMarathonDay(120) },
-                { id: 'marathon_3h', name: 'Марафонец 3ч', icon: '🏃‍♂️', checkFunc: () => checkMarathonDay(180) },
-                { id: 'marathon_4h', name: 'Марафонец 4ч', icon: '🏃‍♀️', checkFunc: () => checkMarathonDay(240) },
-                { id: 'weekly_marathon', name: 'Терпение и труд', icon: '💪', checkFunc: checkWeeklyMarathon },
-                { id: 'full_cycle', name: 'Полный цикл', icon: '🔄', checkFunc: checkFullCycle },
-                { id: 'perfectionist', name: 'Перфекционист', icon: '✨', checkFunc: checkAllTechniquesWeek },
-                { id: 'technique_1h', name: 'Техника: 1 час', icon: '⚡', type: 'techniques', threshold: 60 },
-                { id: 'technique_10h', name: 'Техника: 10 часов', icon: '🎸', type: 'techniques', threshold: 600 },
-                { id: 'technique_100h', name: 'Техника: 100 часов', icon: '🔥', type: 'techniques', threshold: 6000 },
-                { id: 'improv_1h', name: 'Импровизация: 1 час', icon: '🎵', type: 'improvisation', threshold: 60 },
-                { id: 'improv_10h', name: 'Импровизация: 10 часов', icon: '🎼', type: 'improvisation', threshold: 600 },
-                { id: 'improv_100h', name: 'Импровизация: 100 часов', icon: '🏆', type: 'improvisation', threshold: 6000 },
-                { id: 'theory_1h', name: 'Теория: 1 час', icon: '📚', type: 'theory', threshold: 60 },
-                { id: 'theory_10h', name: 'Теория: 10 часов', icon: '📖', type: 'theory', threshold: 600 },
-                { id: 'theory_100h', name: 'Теория: 100 часов', icon: '🎓', type: 'theory', threshold: 6000 },
-                { id: 'songs_1h', name: 'Песни: 1 час', icon: '🎵', type: 'songs', threshold: 60 },
-                { id: 'songs_10h', name: 'Песни: 10 часов', icon: '🎤', type: 'songs', threshold: 600 },
-                { id: 'songs_100h', name: 'Песни: 100 часов', icon: '🌟', type: 'songs', threshold: 6000 },
-                { id: 'ear_1h', name: 'Слух: 1 час', icon: '👂', type: 'earTraining', threshold: 60 },
-                { id: 'ear_10h', name: 'Слух: 10 часов', icon: '🎧', type: 'earTraining', threshold: 600 },
-                { id: 'ear_100h', name: 'Слух: 100 часов', icon: '🎶', type: 'earTraining', threshold: 6000 },
-                { id: 'other_1h', name: 'Прочее: 1 час', icon: '🎼', type: 'other', threshold: 60 },
-                { id: 'other_10h', name: 'Прочее: 10 часов', icon: '🎹', type: 'other', threshold: 600 },
-                { id: 'total_100h', name: 'Всего: 100 часов', icon: '⭐', checkFunc: () => getTotalPracticeMinutes() >= 6000 },
-                { id: 'total_500h', name: 'Всего: 500 часов', icon: '💫', checkFunc: () => getTotalPracticeMinutes() >= 30000 },
-                { id: 'total_1000h', name: 'Всего: 1000 часов', icon: '🏆', checkFunc: () => getTotalPracticeMinutes() >= 60000 }
+                { id: 'streak_10', name: '10 дней подряд', icon: '🔥', type: 'streak', threshold: 10, xp: 50 },
+                { id: 'streak_30', name: '30 дней подряд', icon: '⚡', type: 'streak', threshold: 30, xp: 100 },
+                { id: 'streak_100', name: '100 дней подряд', icon: '💎', type: 'streak', threshold: 100, xp: 100 },
+                { id: 'streak_365', name: 'Год практики', icon: '👑', type: 'streak', threshold: 365, xp: 100 },
+                { id: 'night_owl', name: 'Ночная сова', icon: '🦉', checkFunc: () => checkTimeBasedAchievement(22, 4), xp: 20 },
+                { id: 'early_bird', name: 'Жаворонок', icon: '🐦', checkFunc: () => checkTimeBasedAchievement(6, 9), xp: 20 },
+                { id: 'marathon_2h', name: 'Марафонец 2ч', icon: '🏃', checkFunc: () => checkMarathonDay(120), xp: 50 },
+                { id: 'marathon_3h', name: 'Марафонец 3ч', icon: '🏃‍♂️', checkFunc: () => checkMarathonDay(180), xp: 50 },
+                { id: 'marathon_4h', name: 'Марафонец 4ч', icon: '🏃‍♀️', checkFunc: () => checkMarathonDay(240), xp: 50 },
+                { id: 'weekly_marathon', name: 'Терпение и труд (7д)', icon: '💪', checkFunc: checkWeeklyMarathon, xp: 100 },
+                { id: '14days_marathon', name: 'Терпение и труд (14д)', icon: '💪', checkFunc: check14DaysMarathon, xp: 100 },
+                { id: '28days_marathon', name: 'Терпение и труд (28д)', icon: '💪', checkFunc: check28DaysMarathon, xp: 100 },
+                { id: 'full_cycle', name: 'Полный цикл', icon: '🔄', checkFunc: checkFullCycle, xp: 50 },
+                { id: 'perfectionist', name: 'Перфекционист', icon: '✨', checkFunc: checkAllTechniquesWeek, xp: 100 },
+                { id: 'technique_1h', name: 'Техника: 1 час', icon: '⚡', type: 'techniques', threshold: 60, xp: 20 },
+                { id: 'technique_10h', name: 'Техника: 10 часов', icon: '🎸', type: 'techniques', threshold: 600, xp: 50 },
+                { id: 'technique_100h', name: 'Техника: 100 часов', icon: '🔥', type: 'techniques', threshold: 6000, xp: 100 },
+                { id: 'improv_1h', name: 'Импровизация: 1 час', icon: '🎵', type: 'improvisation', threshold: 60, xp: 20 },
+                { id: 'improv_10h', name: 'Импровизация: 10 часов', icon: '🎼', type: 'improvisation', threshold: 600, xp: 50 },
+                { id: 'improv_100h', name: 'Импровизация: 100 часов', icon: '🏆', type: 'improvisation', threshold: 6000, xp: 100 },
+                { id: 'theory_1h', name: 'Теория: 1 час', icon: '📚', type: 'theory', threshold: 60, xp: 20 },
+                { id: 'theory_10h', name: 'Теория: 10 часов', icon: '📖', type: 'theory', threshold: 600, xp: 50 },
+                { id: 'songs_1h', name: 'Песни: 1 час', icon: '🎵', type: 'songs', threshold: 60, xp: 20 },
+                { id: 'songs_10h', name: 'Песни: 10 часов', icon: '🎤', type: 'songs', threshold: 600, xp: 50 },
+                { id: 'songs_100h', name: 'Песни: 100 часов', icon: '🌟', type: 'songs', threshold: 6000, xp: 100 },
+                { id: 'ear_1h', name: 'Слух: 1 час', icon: '👂', type: 'earTraining', threshold: 60, xp: 20 },
+                { id: 'ear_10h', name: 'Слух: 10 часов', icon: '🎧', type: 'earTraining', threshold: 600, xp: 50 },
+                { id: 'other_1h', name: 'Прочее: 1 час', icon: '🎼', type: 'other', threshold: 60, xp: 20 },
+                { id: 'other_10h', name: 'Прочее: 10 часов', icon: '🎹', type: 'other', threshold: 600, xp: 50 },
+                { id: 'total_100h', name: 'Всего: 100 часов', icon: '⭐', checkFunc: () => getTotalPracticeMinutes() >= 6000, xp: 100 },
+                { id: 'total_500h', name: 'Всего: 500 часов', icon: '💫', checkFunc: () => getTotalPracticeMinutes() >= 30000, xp: 100 },
+                { id: 'total_1000h', name: 'Всего: 1000 часов', icon: '🏆', checkFunc: () => getTotalPracticeMinutes() >= 60000, xp: 100 },
+                { id: 'level_10', name: 'Достиг 10 уровня', icon: '🎖️', checkFunc: () => getLevelInfo().level >= 10, xp: 0 },
+                { id: 'level_20', name: 'Достиг 20 уровня', icon: '🎖️', checkFunc: () => getLevelInfo().level >= 20, xp: 0 },
+                { id: 'level_40', name: 'Достиг 40 уровня', icon: '🎖️', checkFunc: () => getLevelInfo().level >= 40, xp: 0 },
+                { id: 'level_60', name: 'Достиг 60 уровня', icon: '🎖️', checkFunc: () => getLevelInfo().level >= 60, xp: 0 },
+                { id: 'level_80', name: 'Достиг 80 уровня', icon: '🎖️', checkFunc: () => getLevelInfo().level >= 80, xp: 0 },
+                { id: 'level_100', name: 'Достиг 100 уровня', icon: '🎖️', checkFunc: () => getLevelInfo().level >= 100, xp: 0 }
             ];
 
             const getUnlockedAchievements = () => { const streak = calculateStreak(); return achievements.filter(a => a.checkFunc ? a.checkFunc() : a.type === 'streak' ? streak >= a.threshold : a.technique ? getTechniqueMinutes(a.technique) >= a.threshold : getCategoryMinutes(a.type) >= a.threshold); };
@@ -474,6 +644,21 @@
                                         </div>
                                     )}
                                     <div className="text-xs text-gray-600">С {new Date(userProfile.registrationDate).toLocaleDateString('ru-RU')}</div>
+                                </div>
+                            </div>
+                            <div className="mb-4 p-3 bg-gradient-to-r from-purple-50 to-orange-50 rounded-lg">
+                                <div className="flex justify-between items-center mb-2">
+                                    <div>
+                                        <div className="text-lg font-bold text-purple-600">Уровень {getLevelInfo().level}</div>
+                                        <div className="text-xs text-gray-600">{getLevelInfo().rank}</div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-xs text-gray-600">Опыт</div>
+                                        <div className="text-sm font-semibold">{getLevelInfo().currentXP} / {getLevelInfo().nextLevelXP}</div>
+                                    </div>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div className="bg-gradient-to-r from-purple-600 to-orange-600 h-2 rounded-full transition-all duration-500" style={{width: `${getLevelInfo().progress}%`}}></div>
                                 </div>
                             </div>
                             <div className="grid grid-cols-3 gap-2 mb-4">
