@@ -14,12 +14,101 @@
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            background: var(--tg-theme-bg-color, #fff);
-            color: var(--tg-theme-text-color, #000);
-            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
-        #root {
-            padding-bottom: 20px;
+        
+        /* Используем тему Telegram */
+        :root {
+            --tg-bg: var(--tg-theme-bg-color, #ffffff);
+            --tg-text: var(--tg-theme-text-color, #000000);
+            --tg-hint: var(--tg-theme-hint-color, #999999);
+            --tg-link: var(--tg-theme-link-color, #2481cc);
+            --tg-button: var(--tg-theme-button-color, #2481cc);
+            --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
+        }
+        
+        .dark-theme {
+            background: linear-gradient(to bottom right, #1a1a2e, #16213e) !important;
+            color: #e0e0e0;
+        }
+        
+        .dark-theme .bg-white {
+            background: #2d2d2d !important;
+            color: #e0e0e0 !important;
+        }
+        
+        .dark-theme .bg-gray-50 {
+            background: #383838 !important;
+            color: #e0e0e0 !important;
+        }
+        
+        .dark-theme .bg-gray-100 {
+            background: #404040 !important;
+            color: #e0e0e0 !important;
+        }
+        
+        .dark-theme .bg-gradient-to-br {
+            background: #3a3a3a !important;
+        }
+        
+        .dark-theme .from-amber-50,
+        .dark-theme .from-orange-50,
+        .dark-theme .from-purple-50 {
+            background: #3a3a3a !important;
+        }
+        
+        .dark-theme .bg-green-50,
+        .dark-theme .bg-blue-50,
+        .dark-theme .bg-indigo-50,
+        .dark-theme .bg-pink-50 {
+            background: #3a3a3a !important;
+            color: #e0e0e0 !important;
+        }
+        
+        .dark-theme .text-gray-700,
+        .dark-theme .text-gray-800,
+        .dark-theme .text-gray-900 {
+            color: #e0e0e0 !important;
+        }
+        
+        .dark-theme .text-gray-600 {
+            color: #b0b0b0 !important;
+        }
+        
+        .dark-theme .text-gray-500 {
+            color: #999 !important;
+        }
+        
+        .dark-theme .border-gray-200,
+        .dark-theme .border-gray-300 {
+            border-color: #555 !important;
+        }
+        
+        .dark-theme .border-orange-200 {
+            border-color: #ff8c42 !important;
+        }
+        
+        .dark-theme input,
+        .dark-theme textarea {
+            background: #383838 !important;
+            color: #e0e0e0 !important;
+            border-color: #555 !important;
+        }
+        
+        .dark-theme .hover\:bg-gray-50:hover {
+            background: #404040 !important;
+        }
+        
+        .dark-theme .from-purple-100.to-orange-100 {
+            background: linear-gradient(to right, #3a2c4a, #4a3a2c) !important;
+        }
+        
+        .dark-theme .from-yellow-100.to-orange-100 {
+            background: linear-gradient(to bottom right, #5a4a1a, #5a3a1a) !important;
+        }
+        
+        .dark-theme .bg-gray-200 {
+            background: #444 !important;
         }
     </style>
 </head>
@@ -30,9 +119,9 @@
         const { useState, useEffect } = React;
         
         // Инициализация Telegram WebApp
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.enableClosingConfirmation();
+        const tg = window.Telegram?.WebApp || { CloudStorage: null };
+        if (tg.expand) tg.expand();
+        if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
 
         const GuitarPracticeApp = () => {
             const [currentDate, setCurrentDate] = useState(new Date());
@@ -40,6 +129,7 @@
             const [selectedDate, setSelectedDate] = useState(null);
             const [showModal, setShowModal] = useState(false);
             const [currentTab, setCurrentTab] = useState('calendar');
+            const [darkTheme, setDarkTheme] = useState(false);
             const [learnedSongs, setLearnedSongs] = useState([]);
             const [toLearnSongs, setToLearnSongs] = useState([]);
             const [dailyQuote, setDailyQuote] = useState('');
@@ -54,13 +144,15 @@
             };
 
             const techniques = [
-                'Alternate Picking (ПШ)', 'Sweep Picking (Свип)', 'Legato', 'Bending', 'Vibrato',
-                'Tapping', 'String Skipping', 'Tremolo Picking', 'Economy Picking', 'Hybrid Picking'
+                'Alternate Picking (ПШ)', 'Sweep Picking (Свип)', 'Legato (Hammer-on/Pull-off)',
+                'Bending (Бенды)', 'Vibrato', 'Tapping', 'String Skipping', 'Tremolo Picking',
+                'Economy Picking', 'Hybrid Picking'
             ];
 
             const theoryTopics = [
-                'Интервалы', 'Мажорная гамма', 'Минорная гамма', 'Пентатоника', 'Лады (Modes)',
-                'Аккордовые прогрессии', 'CAGED система', 'Арпеджио', 'Септаккорды', 'Кварто-квинтовый круг'
+                'Интервалы', 'Мажорная гамма', 'Минорная гамма', 'Пентатоника',
+                'Лады (Modes)', 'Аккордовые прогрессии', 'CAGED система', 'Арпеджио',
+                'Гармонизация гаммы', 'Септаккорды', 'Ритмика и размеры', 'Кварто-квинтовый круг'
             ];
 
             const practiceApproaches = ['Работал на разгон', 'Работал с пунктирами', 'Работал спид-берст'];
@@ -70,32 +162,143 @@
                 "Музыка - это язык души, а гитара - твой голос.",
                 "Каждая минута практики приближает тебя к мастерству.",
                 "Великие гитаристы не рождаются - они практикуются.",
+                "Твои пальцы помнят то, что повторяется снова и снова.",
+                "Прогресс - это сумма маленьких улучшений каждый день.",
+                "Не сравнивай себя с другими. Сравнивай себя вчерашнего с собой сегодняшним.",
+                "Терпение и практика превращают новичка в мастера.",
+                "Музыка начинается там, где заканчиваются слова.",
+                "Каждая ошибка - это урок на пути к совершенству.",
+                "Гитара - это продолжение твоих эмоций.",
                 "Практика делает прогресс, а не совершенство.",
+                "Сегодняшняя практика - завтрашний успех.",
+                "Музыка - это то, что чувствуют пальцы, когда молчит разум.",
+                "Ты на один день практики ближе к своей цели.",
+                "Талант без практики - как гитара без струн.",
                 "Играй от сердца, техника придёт следом.",
+                "Каждый аккорд - это новое открытие.",
+                "Твоя преданность практике определяет твой уровень.",
+                "Музыка - это терапия для души гитариста.",
+                "Не останавливайся, когда устал. Останавливайся, когда закончил.",
+                "Ритм - это пульс музыки, а ты - её сердце.",
+                "Гитара не прощает лени, но щедро награждает усердие.",
+                "Твой прогресс измеряется не днями, а практикой.",
+                "Вдохновение приходит, но оно должно застать тебя за работой.",
+                "Музыка - это мост между душами.",
+                "Практика - это любовь к процессу, а не только к результату.",
+                "Каждый великий гитарист был когда-то новичком.",
+                "Твои руки - инструмент, твоё сердце - музыка.",
+                "Не бойся медленной практики - бойся отсутствия практики.",
+                "Гитара ждёт твоих рук каждый день.",
+                "Музыка - это то, что остаётся, когда забываешь слова.",
+                "Практика - это диалог между тобой и инструментом.",
+                "Каждый бенд, каждое вибрато - это твоя подпись.",
+                "Ты не просто играешь ноты - ты рассказываешь историю.",
+                "Терпение - лучший учитель гитариста.",
+                "Музыка - это когда гитара говорит то, что ты не можешь сказать.",
+                "Практикуйся так, будто никто не слушает. Играй так, будто все слушают.",
+                "Твоя техника - это лестница к свободе импровизации.",
+                "Каждая серия практики приближает тебя к потоку.",
+                "Гитара - это зеркало твоей души.",
+                "Не практикуй до тех пор, пока не сыграешь правильно. Практикуй до тех пор, пока не сможешь сыграть неправильно.",
+                "Музыка - это эмоции в форме звуков.",
+                "Твой прогресс невидим, пока не оглянешься назад.",
+                "Каждая практика - это инвестиция в будущее мастерство.",
+                "Гитара учит тебя быть терпеливым и настойчивым.",
+                "Музыка - это единственный язык, который понимают все.",
+                "Практика - это медитация для гитариста.",
+                "Ты растёшь каждый раз, когда берёшь гитару в руки.",
+                "Не ищи совершенства - ищи прогресс.",
+                "Музыка - это то, что делает жизнь осмысленной.",
+                "Твоя преданность гитаре вернётся к тебе сторицей.",
+                "Каждый риф, который ты выучишь, расширяет твой словарь.",
+                "Практика - это путь, а не пункт назначения.",
+                "Гитара не требует таланта - она требует любви.",
+                "Музыка - это когда время останавливается.",
+                "Твои пальцы - это кисти, гриф - холст.",
+                "Не бойся ошибок - они часть пути.",
+                "Каждый день без практики - шаг назад.",
+                "Музыка - это пища для души гитариста.",
+                "Практикуйся с умом, играй с сердцем.",
+                "Гитара - это друг, который всегда рядом.",
+                "Твоя техника - это фундамент твоей музыкальности.",
+                "Не считай часы практики - делай практику важной.",
+                "Музыка - это то, что соединяет нас всех.",
+                "Каждая нота - это возможность выразить себя.",
+                "Практика - это ключ к музыкальной свободе.",
+                "Гитара научит тебя дисциплине и страсти.",
+                "Твой прогресс - это результат твоей преданности.",
+                "Музыка - это когда душа поёт через пальцы.",
+                "Не жди мотивации - создавай привычку.",
+                "Каждая практика делает тебя лучшей версией себя.",
+                "Гитара - это инструмент самовыражения.",
+                "Музыка - это универсальная истина.",
+                "Практикуйся, когда вдохновлён. Практикуйся, когда нет.",
+                "Твои руки помнят больше, чем ты думаешь.",
+                "Не сдавайся - каждый мастер был когда-то учеником.",
+                "Музыка - это магия в форме звуков.",
+                "Практика превращает сложное в простое.",
+                "Гитара - это окно в твою душу.",
+                "Каждый гитарист уникален - найди свой голос.",
+                "Музыка - это то, что делает нас людьми.",
+                "Практика - это разговор с самим собой.",
+                "Не гонись за скоростью - гонись за точностью.",
+                "Гитара ждёт, когда ты вернёшься к ней.",
+                "Музыка - это когда техника встречается с эмоцией.",
+                "Каждая минута практики - это подарок будущему себе.",
+                "Твоя музыка - это отражение твоей души.",
+                "Не бойся начинать заново - это часть роста.",
+                "Практика - это путешествие длиною в жизнь.",
+                "Гитара учит тебя слушать и чувствовать.",
+                "Музыка - это язык, который не нуждается в переводе.",
+                "Каждый день практики - это победа.",
+                "Твоя техника служит твоей музыкальности.",
+                "Не сравнивай свой прогресс с прогрессом других.",
+                "Музыка - это когда ты забываешь обо всём.",
+                "Гитара - это твой голос, когда слова не нужны.",
+                "Музыка - это то, что остаётся вечным.",
+                "Практикуйся с целью, играй с радостью.",
                 "Каждый раз, когда берёшь гитару, играй как будто это последний раз. — Eric Clapton",
+                "Блюз - это то, к чему я обращаюсь за вдохновением во всех испытаниях. — Eric Clapton",
                 "У тебя всего 12 нот. Делай с ними что хочешь. — Eddie Van Halen",
+                "Всегда о музыке, никогда ни о чём другом. — Eddie Van Halen",
+                "Гитара - это эмоциональное продолжение человека, который на ней играет. — Eddie Van Halen",
                 "К чёрту правила. Если звучит правильно - значит так и есть. — Eddie Van Halen",
                 "Дай мне гитару, фортепиано или метлу со струной - не заскучаю нигде. — Keith Richards",
+                "Ты всегда учишься каждый раз, когда берёшь её в руки. — Keith Richards",
                 "Расслабься. Будь собой. Играй много. — Joe Satriani",
-                "Гитара - лучшая форма самовыражения для меня. — Slash"
+                "Гитара - лучшая форма самовыражения для меня. — Slash",
+                "Я большой фан гитары. Люблю этот инструмент. — Steve Vai",
+                "Успех - это упасть девять раз и подняться десять. — Jon Bon Jovi"
             ];
 
-            // Загрузка данных из Telegram Cloud Storage
+            // Загрузка из Telegram Cloud Storage
             useEffect(() => {
                 const loadData = async () => {
                     try {
                         if (tg.CloudStorage) {
-                            const keys = ['practiceData', 'learnedSongs', 'toLearnSongs'];
+                            const keys = ['practiceData', 'learnedSongs', 'toLearnSongs', 'darkTheme'];
                             
                             tg.CloudStorage.getItems(keys, (error, result) => {
                                 if (!error && result) {
                                     if (result.practiceData) setPracticeData(JSON.parse(result.practiceData));
                                     if (result.learnedSongs) setLearnedSongs(JSON.parse(result.learnedSongs));
                                     if (result.toLearnSongs) setToLearnSongs(JSON.parse(result.toLearnSongs));
+                                    if (result.darkTheme) setDarkTheme(JSON.parse(result.darkTheme));
                                 }
                                 setLoading(false);
                             });
                         } else {
+                            // Fallback to localStorage
+                            const loadedPractice = localStorage.getItem('guitarPracticeData');
+                            const loadedTheme = localStorage.getItem('darkTheme');
+                            const loadedLearned = localStorage.getItem('learnedSongs');
+                            const loadedToLearn = localStorage.getItem('toLearnSongs');
+                            
+                            if (loadedPractice) setPracticeData(JSON.parse(loadedPractice));
+                            if (loadedTheme) setDarkTheme(JSON.parse(loadedTheme));
+                            if (loadedLearned) setLearnedSongs(JSON.parse(loadedLearned));
+                            if (loadedToLearn) setToLearnSongs(JSON.parse(loadedToLearn));
+                            
                             setLoading(false);
                         }
                     } catch (e) {
@@ -108,27 +311,65 @@
                 setDailyQuote(motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]);
             }, []);
 
-            // Сохранение в Telegram Cloud Storage
+            // Сохранение данных
             useEffect(() => {
-                if (!loading && tg.CloudStorage) {
-                    tg.CloudStorage.setItem('practiceData', JSON.stringify(practiceData));
+                if (!loading) {
+                    if (tg.CloudStorage) {
+                        tg.CloudStorage.setItem('practiceData', JSON.stringify(practiceData));
+                    } else {
+                        localStorage.setItem('guitarPracticeData', JSON.stringify(practiceData));
+                    }
                 }
             }, [practiceData, loading]);
 
             useEffect(() => {
-                if (!loading && tg.CloudStorage) {
-                    tg.CloudStorage.setItem('learnedSongs', JSON.stringify(learnedSongs));
+                if (!loading) {
+                    if (tg.CloudStorage) {
+                        tg.CloudStorage.setItem('darkTheme', JSON.stringify(darkTheme));
+                    } else {
+                        localStorage.setItem('darkTheme', JSON.stringify(darkTheme));
+                    }
+                    if (darkTheme) {
+                        document.body.classList.add('dark-theme');
+                    } else {
+                        document.body.classList.remove('dark-theme');
+                    }
+                }
+            }, [darkTheme, loading]);
+
+            useEffect(() => {
+                if (!loading) {
+                    if (tg.CloudStorage) {
+                        tg.CloudStorage.setItem('learnedSongs', JSON.stringify(learnedSongs));
+                    } else {
+                        localStorage.setItem('learnedSongs', JSON.stringify(learnedSongs));
+                    }
                 }
             }, [learnedSongs, loading]);
 
             useEffect(() => {
-                if (!loading && tg.CloudStorage) {
-                    tg.CloudStorage.setItem('toLearnSongs', JSON.stringify(toLearnSongs));
+                if (!loading) {
+                    if (tg.CloudStorage) {
+                        tg.CloudStorage.setItem('toLearnSongs', JSON.stringify(toLearnSongs));
+                    } else {
+                        localStorage.setItem('toLearnSongs', JSON.stringify(toLearnSongs));
+                    }
                 }
             }, [toLearnSongs, loading]);
 
             const formatDateKey = (date) => {
                 return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            };
+
+            const getDaysInMonth = (date) => {
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                return {
+                    daysInMonth: lastDay.getDate(),
+                    startingDayOfWeek: firstDay.getDay()
+                };
             };
 
             const getTotalMinutes = (dateKey) => {
@@ -154,21 +395,148 @@
                 return streak;
             };
 
-            const handleDateClick = (day) => {
-                const clickedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-                setSelectedDate(clickedDate);
-                setShowModal(true);
+            const getTotalPracticeMinutes = () => {
+                return Object.keys(practiceData).reduce((sum, dateKey) => sum + getTotalMinutes(dateKey), 0);
             };
 
-            const savePracticeEntry = (category, minutes, notes, sourceLink, selectedItems, tempo) => {
+            const getAverageMinutesPerDay = (days) => {
+                const endDate = new Date();
+                const startDate = new Date();
+                startDate.setDate(endDate.getDate() - days);
+                
+                let totalMinutes = 0;
+                let practiceCount = 0;
+
+                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                    const dateKey = formatDateKey(d);
+                    const minutes = getTotalMinutes(dateKey);
+                    if (minutes > 0) {
+                        totalMinutes += minutes;
+                        practiceCount++;
+                    }
+                }
+                return practiceCount > 0 ? Math.round(totalMinutes / practiceCount) : 0;
+            };
+
+            const getCategoryMinutes = (category) => {
+                let total = 0;
+                Object.values(practiceData).forEach(day => {
+                    if (day.entries) {
+                        day.entries.forEach(entry => {
+                            if (entry.category === category) {
+                                total += entry.minutes || 0;
+                            }
+                        });
+                    }
+                });
+                return total;
+            };
+
+            const getTechniqueMinutes = (technique) => {
+                let total = 0;
+                Object.values(practiceData).forEach(day => {
+                    if (day.entries) {
+                        day.entries.forEach(entry => {
+                            if (entry.category === 'techniques' && entry.selectedTechniques && entry.selectedTechniques.includes(technique)) {
+                                total += entry.minutes || 0;
+                            }
+                        });
+                    }
+                });
+                return total;
+            };
+
+            const getTotalPracticeDays = () => {
+                return Object.keys(practiceData).filter(dateKey => getTotalMinutes(dateKey) > 0).length;
+            };
+
+            const techniqueAchievements = techniques.flatMap(tech => [
+                { id: `${tech}_10`, name: `${tech}: 10 мин`, icon: '⭐', technique: tech, threshold: 10 },
+                { id: `${tech}_60`, name: `${tech}: 1 час`, icon: '🎸', technique: tech, threshold: 60 },
+                { id: `${tech}_300`, name: `${tech}: 5 часов`, icon: '🔥', technique: tech, threshold: 300 },
+                { id: `${tech}_600`, name: `${tech}: 10 часов`, icon: '💎', technique: tech, threshold: 600 }
+            ]);
+
+            const achievements = [
+                { id: 'streak_10', name: '10 дней подряд', icon: '🔥', type: 'streak', threshold: 10 },
+                { id: 'streak_30', name: '30 дней подряд', icon: '⚡', type: 'streak', threshold: 30 },
+                { id: 'streak_100', name: '100 дней подряд', icon: '💎', type: 'streak', threshold: 100 },
+                { id: 'streak_366', name: 'Год без пропуска', icon: '👑', type: 'streak', threshold: 366 },
+                { id: 'streak_500', name: '500 дней подряд', icon: '🌟', type: 'streak', threshold: 500 },
+                { id: 'streak_1000', name: '1000 дней подряд', icon: '🏆', type: 'streak', threshold: 1000 },
+                ...techniqueAchievements,
+                { id: 'improv_60', name: 'Импровизация: 1 час', icon: '🎵', type: 'improvisation', threshold: 60 },
+                { id: 'improv_1000', name: 'Импровизация: 16+ часов', icon: '🎼', type: 'improvisation', threshold: 1000 },
+                { id: 'improv_10000', name: 'Импровизация: Виртуоз', icon: '🏆', type: 'improvisation', threshold: 10000 }
+            ];
+
+            const getUnlockedAchievements = () => {
+                const streak = calculateStreak();
+                return achievements.filter(achievement => {
+                    if (achievement.type === 'streak') {
+                        return streak >= achievement.threshold;
+                    } else if (achievement.technique) {
+                        return getTechniqueMinutes(achievement.technique) >= achievement.threshold;
+                    } else {
+                        return getCategoryMinutes(achievement.type) >= achievement.threshold;
+                    }
+                });
+            };
+
+            const exportData = () => {
+                const allData = {
+                    practice: practiceData,
+                    learnedSongs,
+                    toLearnSongs
+                };
+                const dataStr = JSON.stringify(allData, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `guitar-practice-backup-${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+                if (tg.showAlert) tg.showAlert('✅ Данные экспортированы!');
+            };
+
+            const importData = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        if (imported.practice) setPracticeData(imported.practice);
+                        if (imported.learnedSongs) setLearnedSongs(imported.learnedSongs);
+                        if (imported.toLearnSongs) setToLearnSongs(imported.toLearnSongs);
+                        if (tg.showAlert) {
+                            tg.showAlert('✅ Данные успешно импортированы!');
+                        } else {
+                            alert('✅ Данные успешно импортированы!');
+                        }
+                    } catch (error) {
+                        if (tg.showAlert) {
+                            tg.showAlert('❌ Ошибка при импорте данных');
+                        } else {
+                            alert('❌ Ошибка при импорте данных');
+                        }
+                    }
+                };
+                reader.readAsText(file);
+            };
+
+            const savePracticeEntry = (category, minutes, details, sourceLink, selectedTechniques, selectedApproaches, tempo) => {
                 const dateKey = formatDateKey(selectedDate);
                 const newEntry = {
                     id: Date.now(),
                     category,
                     minutes: parseInt(minutes),
-                    notes,
+                    details,
                     sourceLink,
-                    selectedItems,
+                    selectedTechniques,
+                    selectedApproaches,
                     tempo,
                     timestamp: new Date().toISOString()
                 };
@@ -180,36 +548,35 @@
                         entries: [...(prev[dateKey]?.entries || []), newEntry]
                     }
                 }));
-                
-                tg.showAlert('✅ Практика сохранена!');
             };
 
             const deleteEntry = (dateKey, entryId) => {
-                tg.showConfirm('Удалить эту запись?', (confirmed) => {
-                    if (confirmed) {
-                        setPracticeData(prev => {
-                            const newData = { ...prev };
-                            if (newData[dateKey] && newData[dateKey].entries) {
-                                newData[dateKey].entries = newData[dateKey].entries.filter(e => e.id !== entryId);
-                                if (newData[dateKey].entries.length === 0) {
-                                    delete newData[dateKey];
-                                }
+                const confirmDelete = () => {
+                    setPracticeData(prev => {
+                        const newData = { ...prev };
+                        if (newData[dateKey] && newData[dateKey].entries) {
+                            newData[dateKey].entries = newData[dateKey].entries.filter(e => e.id !== entryId);
+                            if (newData[dateKey].entries.length === 0) {
+                                delete newData[dateKey];
                             }
-                            return newData;
-                        });
+                        }
+                        return newData;
+                    });
+                };
+
+                if (tg.showConfirm) {
+                    tg.showConfirm('Удалить эту запись?', confirmDelete);
+                } else {
+                    if (confirm('Удалить эту запись?')) {
+                        confirmDelete();
                     }
-                });
+                }
             };
 
-            const getDaysInMonth = (date) => {
-                const year = date.getFullYear();
-                const month = date.getMonth();
-                const firstDay = new Date(year, month, 1);
-                const lastDay = new Date(year, month + 1, 0);
-                return {
-                    daysInMonth: lastDay.getDate(),
-                    startingDayOfWeek: firstDay.getDay()
-                };
+            const handleDateClick = (day) => {
+                const clickedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                setSelectedDate(clickedDate);
+                setShowModal(true);
             };
 
             const renderCalendar = () => {
@@ -218,7 +585,7 @@
                 const weekDays = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 
                 weekDays.forEach(day => {
-                    days.push(<div key={`header-${day}`} className="text-center font-semibold text-gray-600 p-2 text-sm">{day}</div>);
+                    days.push(<div key={`header-${day}`} className="text-center font-semibold text-gray-600 p-2">{day}</div>);
                 });
 
                 for (let i = 0; i < startingDayOfWeek; i++) {
@@ -230,19 +597,23 @@
                     const dateKey = formatDateKey(date);
                     const totalMinutes = getTotalMinutes(dateKey);
                     const hasData = practiceData[dateKey];
+                    const entryCount = hasData?.entries?.length || 0;
 
                     days.push(
                         <div
                             key={day}
                             onClick={() => handleDateClick(day)}
-                            className={`p-2 border rounded-lg cursor-pointer active:bg-gray-100 transition-colors min-h-16 ${
+                            className={`p-2 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors min-h-20 ${
                                 hasData ? 'bg-gradient-to-br from-amber-50 to-orange-50 border-orange-200' : 'border-gray-200'
                             }`}
                         >
-                            <div className="font-semibold text-gray-700 text-sm">{day}</div>
+                            <div className="font-semibold text-gray-700">{day}</div>
                             {totalMinutes > 0 && (
-                                <div className="text-xs mt-1 text-orange-600 font-semibold">
-                                    {totalMinutes}м
+                                <div className="text-xs mt-1">
+                                    <div className="flex items-center gap-1 text-orange-600 font-semibold">
+                                        ⏱️ {totalMinutes} мин
+                                    </div>
+                                    <div className="text-xs text-gray-500">{entryCount} {entryCount === 1 ? 'запись' : 'записей'}</div>
                                 </div>
                             )}
                         </div>
@@ -257,7 +628,10 @@
                 const [minutes, setMinutes] = useState('');
                 const [notes, setNotes] = useState('');
                 const [sourceLink, setSourceLink] = useState('');
-                const [selectedItems, setSelectedItems] = useState([]);
+                const [selectedTechniques, setSelectedTechniques] = useState([]);
+                const [selectedTheory, setSelectedTheory] = useState([]);
+                const [selectedApproaches, setSelectedApproaches] = useState([]);
+                const [selectedSongApproaches, setSelectedSongApproaches] = useState([]);
                 const [tempo, setTempo] = useState('');
 
                 if (!showModal || !selectedDate) return null;
@@ -267,129 +641,198 @@
 
                 const handleSave = () => {
                     if (!minutes) {
-                        tg.showAlert('Укажите время практики');
+                        if (tg.showAlert) {
+                            tg.showAlert('Укажите время практики');
+                        } else {
+                            alert('Укажите время практики');
+                        }
                         return;
                     }
-                    savePracticeEntry(activeCategory, minutes, notes, sourceLink, selectedItems, tempo || '120');
+
+                    let details = notes;
+                    let approachesToSave = [];
+                    let techniquesToSave = [];
+
+                    if (activeCategory === 'techniques') {
+                        const parts = [];
+                        if (selectedTechniques.length > 0) {
+                            parts.push(`Техники: ${selectedTechniques.join(', ')}`);
+                            techniquesToSave = selectedTechniques;
+                        }
+                        if (selectedApproaches.length > 0) {
+                            parts.push(`Подход: ${selectedApproaches.join(', ')}`);
+                            approachesToSave = selectedApproaches;
+                        }
+                        const finalTempo = tempo || '120';
+                        parts.push(`Темп: ${finalTempo} bpm`);
+                        if (notes) parts.push(notes);
+                        details = parts.join(' | ');
+                    } else if (activeCategory === 'songs') {
+                        const parts = [];
+                        if (selectedSongApproaches.length > 0) {
+                            parts.push(selectedSongApproaches.join(', '));
+                            approachesToSave = selectedSongApproaches;
+                        }
+                        if (notes) parts.push(notes);
+                        details = parts.join(' | ');
+                    } else if (activeCategory === 'theory' && selectedTheory.length > 0) {
+                        details = `Изучено: ${selectedTheory.join(', ')}${notes ? '. ' + notes : ''}`;
+                    }
+
+                    savePracticeEntry(activeCategory, minutes, details, sourceLink, techniquesToSave, approachesToSave, tempo || '120');
+                    
                     setMinutes('');
                     setNotes('');
                     setSourceLink('');
-                    setSelectedItems([]);
+                    setSelectedTechniques([]);
+                    setSelectedTheory([]);
+                    setSelectedApproaches([]);
+                    setSelectedSongApproaches([]);
                     setTempo('');
+                    
+                    if (tg.showAlert) tg.showAlert('✅ Практика сохранена!');
                 };
 
-                const items = activeCategory === 'techniques' ? techniques : 
-                              activeCategory === 'theory' ? theoryTopics : [];
-
                 return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end z-50">
-                        <div className="bg-white rounded-t-3xl w-full max-h-[90vh] overflow-y-auto">
-                            <div className="sticky top-0 bg-gradient-to-r from-purple-600 to-orange-600 text-white p-4 rounded-t-3xl">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                            <div className="sticky top-0 bg-gradient-to-r from-purple-600 to-orange-600 text-white p-6 rounded-t-xl">
                                 <div className="flex justify-between items-center">
-                                    <h2 className="text-lg font-bold">
-                                        {selectedDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}
+                                    <h2 className="text-2xl font-bold">
+                                        {selectedDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
                                     </h2>
-                                    <button onClick={() => setShowModal(false)} className="text-white text-2xl">✕</button>
+                                    <button onClick={() => setShowModal(false)} className="text-white hover:bg-white hover:bg-opacity-20 rounded-full w-8 h-8 flex items-center justify-center">✕</button>
                                 </div>
                             </div>
 
-                            <div className="p-4">
-                                <div className="flex gap-2 mb-4 overflow-x-auto">
+                            <div className="p-6">
+                                <div className="flex gap-2 mb-6 flex-wrap">
                                     {Object.entries(categories).map(([key, cat]) => (
                                         <button
                                             key={key}
                                             onClick={() => setActiveCategory(key)}
-                                            className={`px-3 py-2 rounded-lg font-semibold text-sm whitespace-nowrap ${
-                                                activeCategory === key ? `${cat.color} text-white` : 'bg-gray-100'
-                                            }`}
+                                            className={`px-4 py-2 rounded-lg font-semibold transition ${activeCategory === key ? `${cat.color} text-white` : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                                         >
                                             {cat.icon} {cat.name}
                                         </button>
                                     ))}
                                 </div>
 
-                                <div className="space-y-3">
-                                    <input
-                                        type="number"
-                                        value={minutes}
-                                        onChange={(e) => setMinutes(e.target.value)}
-                                        className="w-full px-4 py-3 border rounded-lg text-base"
-                                        placeholder="Минуты"
-                                    />
+                                <div className="space-y-4 mb-6">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Время практики (минуты)</label>
+                                        <input type="number" value={minutes} onChange={(e) => setMinutes(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="30" />
+                                    </div>
 
-                                    {items.length > 0 && (
-                                        <div className="space-y-2 max-h-40 overflow-y-auto">
-                                            {items.map(item => (
-                                                <label key={item} className="flex items-center gap-2 cursor-pointer p-2 hover:bg-gray-50 rounded">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedItems.includes(item)}
-                                                        onChange={(e) => {
-                                                            if (e.target.checked) setSelectedItems([...selectedItems, item]);
-                                                            else setSelectedItems(selectedItems.filter(i => i !== item));
-                                                        }}
-                                                        className="w-5 h-5"
-                                                    />
-                                                    <span className="text-sm">{item}</span>
-                                                </label>
-                                            ))}
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Ссылка на источник (опционально)</label>
+                                        <input type="url" value={sourceLink} onChange={(e) => setSourceLink(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="https://youtube.com/..." />
+                                    </div>
+
+                                    {activeCategory === 'techniques' && (
+                                        <>
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-700 mb-2">Отработанные техники</label>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {techniques.map(tech => (
+                                                        <label key={tech} className="flex items-center gap-2 cursor-pointer">
+                                                            <input type="checkbox" checked={selectedTechniques.includes(tech)} onChange={(e) => {
+                                                                if (e.target.checked) setSelectedTechniques([...selectedTechniques, tech]);
+                                                                else setSelectedTechniques(selectedTechniques.filter(t => t !== tech));
+                                                            }} className="w-4 h-4" />
+                                                            <span className="text-sm">{tech}</span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-700 mb-2">Подход к практике</label>
+                                                <div className="grid grid-cols-1 gap-2">
+                                                    {practiceApproaches.map(approach => (
+                                                        <label key={approach} className="flex items-center gap-2 cursor-pointer">
+                                                            <input type="checkbox" checked={selectedApproaches.includes(approach)} onChange={(e) => {
+                                                                if (e.target.checked) setSelectedApproaches([...selectedApproaches, approach]);
+                                                                else setSelectedApproaches(selectedApproaches.filter(a => a !== approach));
+                                                            }} className="w-4 h-4" />
+                                                            <span className="text-sm">{approach}</span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-700 mb-2">Темп (bpm) - по умолчанию 120</label>
+                                                <input type="number" value={tempo} onChange={(e) => setTempo(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="120" />
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {activeCategory === 'songs' && (
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Что делал</label>
+                                            <div className="grid grid-cols-1 gap-2">
+                                                {songsApproaches.map(approach => (
+                                                    <label key={approach} className="flex items-center gap-2 cursor-pointer">
+                                                        <input type="checkbox" checked={selectedSongApproaches.includes(approach)} onChange={(e) => {
+                                                            if (e.target.checked) setSelectedSongApproaches([...selectedSongApproaches, approach]);
+                                                            else setSelectedSongApproaches(selectedSongApproaches.filter(a => a !== approach));
+                                                        }} className="w-4 h-4" />
+                                                        <span className="text-sm">{approach}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
                                         </div>
                                     )}
 
-                                    {activeCategory === 'techniques' && (
-                                        <input
-                                            type="number"
-                                            value={tempo}
-                                            onChange={(e) => setTempo(e.target.value)}
-                                            className="w-full px-4 py-3 border rounded-lg text-base"
-                                            placeholder="Темп (BPM, по умолчанию 120)"
-                                        />
+                                    {activeCategory === 'theory' && (
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Изученные темы</label>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {theoryTopics.map(topic => (
+                                                    <label key={topic} className="flex items-center gap-2 cursor-pointer">
+                                                        <input type="checkbox" checked={selectedTheory.includes(topic)} onChange={(e) => {
+                                                            if (e.target.checked) setSelectedTheory([...selectedTheory, topic]);
+                                                            else setSelectedTheory(selectedTheory.filter(t => t !== topic));
+                                                        }} className="w-4 h-4" />
+                                                        <span className="text-sm">{topic}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
                                     )}
 
-                                    <textarea
-                                        value={notes}
-                                        onChange={(e) => setNotes(e.target.value)}
-                                        className="w-full px-4 py-3 border rounded-lg text-base"
-                                        rows="3"
-                                        placeholder="Заметки..."
-                                    />
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Заметки</label>
+                                        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg" rows="3" placeholder="Что практиковал, какие упражнения..."></textarea>
+                                    </div>
 
-                                    <input
-                                        type="url"
-                                        value={sourceLink}
-                                        onChange={(e) => setSourceLink(e.target.value)}
-                                        className="w-full px-4 py-3 border rounded-lg text-base"
-                                        placeholder="Ссылка на источник"
-                                    />
-
-                                    <button
-                                        onClick={handleSave}
-                                        className="w-full bg-gradient-to-r from-purple-600 to-orange-600 text-white py-4 rounded-lg font-bold text-base"
-                                    >
-                                        Сохранить
+                                    <button onClick={handleSave} className="w-full bg-gradient-to-r from-purple-600 to-orange-600 text-white py-3 rounded-lg font-bold hover:shadow-lg transition">
+                                        Добавить запись
                                     </button>
                                 </div>
 
                                 {existingEntries.length > 0 && (
-                                    <div className="mt-4 space-y-3">
-                                        <h3 className="font-bold">Записи ({existingEntries.length})</h3>
-                                        {existingEntries.map(entry => (
-                                            <div key={entry.id} className="p-3 bg-gray-50 rounded-lg">
-                                                <div className="flex justify-between items-start">
-                                                    <div className="flex-1">
-                                                        <div className="font-semibold text-sm">
-                                                            {categories[entry.category]?.icon} {categories[entry.category]?.name}
-                                                        </div>
-                                                        <div className="text-sm text-gray-600">{entry.minutes} мин</div>
-                                                        {entry.notes && <div className="text-sm mt-1">{entry.notes}</div>}
+                                    <div className="border-t pt-6">
+                                        <h3 className="font-bold text-lg mb-4">Записи за день ({existingEntries.length})</h3>
+                                        {existingEntries.map((entry, idx) => (
+                                            <div key={entry.id} className="mb-4 p-4 bg-gray-50 rounded-lg">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`w-3 h-3 rounded-full ${categories[entry.category]?.color}`}></span>
+                                                        <span className="font-semibold">{categories[entry.category]?.name}</span>
+                                                        <span className="text-sm text-gray-600">• {entry.minutes} мин</span>
                                                     </div>
-                                                    <button
-                                                        onClick={() => deleteEntry(dateKey, entry.id)}
-                                                        className="text-red-500 text-lg ml-2"
-                                                    >
-                                                        ✕
-                                                    </button>
+                                                    <button onClick={() => deleteEntry(dateKey, entry.id)} className="text-red-500 hover:text-red-700 text-sm">✕ Удалить</button>
                                                 </div>
+                                                {entry.details && <div className="text-sm text-gray-700 ml-5">{entry.details}</div>}
+                                                {entry.sourceLink && (
+                                                    <div className="mt-2 ml-5">
+                                                        <a href={entry.sourceLink} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">
+                                                            🔗 {entry.sourceLink}
+                                                        </a>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -400,58 +843,266 @@
                 );
             };
 
-            const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+            const CalendarView = () => {
+                const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+
+                return (
+                    <>
+                        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+                            <div className="flex items-center justify-between">
+                                <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                                    ← Назад
+                                </button>
+                                <h2 className="text-2xl font-bold text-gray-800">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</h2>
+                                <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))} className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition">
+                                    Вперёд →
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+                            <div className="grid grid-cols-7 gap-2">{renderCalendar()}</div>
+                        </div>
+
+                        <div className="bg-gradient-to-r from-purple-100 to-orange-100 rounded-xl shadow-lg p-6 mb-6">
+                            <div className="text-center">
+                                <div className="text-sm text-gray-600 mb-2">💭 Мотивация дня</div>
+                                <div className="text-lg font-semibold text-gray-800 italic">"{dailyQuote}"</div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-white rounded-xl shadow-lg p-6">
+                                <h3 className="text-xl font-bold mb-4">📊 Общая статистика</h3>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-3xl">🔥</span>
+                                            <div>
+                                                <div className="text-sm text-gray-600">Дней подряд</div>
+                                                <div className="text-2xl font-bold text-orange-600">{calculateStreak()}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-3xl">⏱️</span>
+                                            <div>
+                                                <div className="text-sm text-gray-600">Всего практики</div>
+                                                <div className="text-2xl font-bold text-purple-600">
+                                                    {getTotalPracticeMinutes()} мин
+                                                    <span className="text-sm text-gray-500 ml-2">({Math.floor(getTotalPracticeMinutes() / 60)}ч {getTotalPracticeMinutes() % 60}м)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="p-3 bg-blue-50 rounded-lg">
+                                            <div className="text-xs text-gray-600">Среднее/день (неделя)</div>
+                                            <div className="text-lg font-bold text-blue-600">{getAverageMinutesPerDay(7)} мин</div>
+                                        </div>
+                                        <div className="p-3 bg-indigo-50 rounded-lg">
+                                            <div className="text-xs text-gray-600">Среднее/день (месяц)</div>
+                                            <div className="text-lg font-bold text-indigo-600">{getAverageMinutesPerDay(30)} мин</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-xl shadow-lg p-6">
+                                <h3 className="text-xl font-bold mb-4">🎯 По направлениям</h3>
+                                <div className="space-y-3">
+                                    {Object.entries(categories).map(([key, cat]) => {
+                                        const minutes = getCategoryMinutes(key);
+                                        const hours = Math.floor(minutes / 60);
+                                        const mins = minutes % 60;
+                                        return (
+                                            <div key={key} className="p-3 bg-gray-50 rounded-lg">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className={`w-3 h-3 rounded-full ${cat.color}`}></div>
+                                                        <span className="font-semibold text-sm">{cat.icon} {cat.name}</span>
+                                                    </div>
+                                                    <span className="text-xs text-gray-500">{hours > 0 ? `${hours}ч ${mins}м` : `${mins}м`}</span>
+                                                </div>
+                                                <div className="text-xl font-bold text-gray-800">{minutes} <span className="text-sm text-gray-500">минут</span></div>
+                                                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                                    <div className={`${cat.color} h-2 rounded-full transition-all`} style={{ width: `${Math.min((minutes / (getTotalPracticeMinutes() || 1)) * 100, 100)}%` }}></div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                );
+            };
+
+            const AchievementsView = () => {
+                const unlocked = getUnlockedAchievements();
+                return (
+                    <div className="bg-white rounded-xl shadow-lg p-6">
+                        <h3 className="text-2xl font-bold mb-6">🏆 Достижения ({unlocked.length}/{achievements.length})</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                            {achievements.map(achievement => {
+                                const isUnlocked = unlocked.some(a => a.id === achievement.id);
+                                return (
+                                    <div
+                                        key={achievement.id}
+                                        className={`p-3 rounded-lg text-center transition-all ${
+                                            isUnlocked ? 'bg-gradient-to-br from-yellow-100 to-orange-100 border-2 border-yellow-400 shadow-md' : 'bg-gray-100 opacity-40 grayscale'
+                                        }`}
+                                        title={achievement.name}
+                                    >
+                                        <div className="text-3xl mb-1">{achievement.icon}</div>
+                                        <div className="text-xs font-semibold text-gray-700 leading-tight">{achievement.name}</div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                );
+            };
+
+            const NotesView = () => {
+                const [newLearnedSong, setNewLearnedSong] = useState('');
+                const [newToLearnSong, setNewToLearnSong] = useState('');
+                const [currentTempo, setCurrentTempo] = useState('');
+                const [targetTempo, setTargetTempo] = useState('');
+
+                const addLearnedSong = () => {
+                    if (newLearnedSong.trim()) {
+                        setLearnedSongs([...learnedSongs, { name: newLearnedSong, date: new Date().toISOString() }]);
+                        setNewLearnedSong('');
+                    }
+                };
+
+                const addToLearnSong = () => {
+                    if (newToLearnSong.trim()) {
+                        setToLearnSongs([...toLearnSongs, { name: newToLearnSong, currentTempo: currentTempo || '0', targetTempo: targetTempo || '120', date: new Date().toISOString() }]);
+                        setNewToLearnSong('');
+                        setCurrentTempo('');
+                        setTargetTempo('');
+                    }
+                };
+
+                return (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-white rounded-xl shadow-lg p-6">
+                            <h3 className="text-xl font-bold mb-4">✅ Выученные песни ({learnedSongs.length})</h3>
+                            <div className="space-y-3 mb-4">
+                                {learnedSongs.map((song, idx) => (
+                                    <div key={idx} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                                        <span className="font-semibold">{song.name}</span>
+                                        <button onClick={() => setLearnedSongs(learnedSongs.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700">✕</button>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="flex gap-2">
+                                <input type="text" value={newLearnedSong} onChange={(e) => setNewLearnedSong(e.target.value)} placeholder="Название песни" className="flex-1 px-4 py-2 border border-gray-300 rounded-lg" onKeyPress={(e) => e.key === 'Enter' && addLearnedSong()} />
+                                <button onClick={addLearnedSong} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">+</button>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-lg p-6">
+                            <h3 className="text-xl font-bold mb-4">🎯 Собираюсь выучить ({toLearnSongs.length})</h3>
+                            <div className="space-y-3 mb-4">
+                                {toLearnSongs.map((song, idx) => (
+                                    <div key={idx} className="p-3 bg-blue-50 rounded-lg">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="font-semibold">{song.name}</span>
+                                            <button onClick={() => setToLearnSongs(toLearnSongs.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700">✕</button>
+                                        </div>
+                                        <div className="text-sm text-gray-600">Текущий: {song.currentTempo} bpm → Цель: {song.targetTempo} bpm</div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="space-y-2">
+                                <input type="text" value={newToLearnSong} onChange={(e) => setNewToLearnSong(e.target.value)} placeholder="Название песни" className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+                                <div className="grid grid-cols-2 gap-2">
+                                    <input type="number" value={currentTempo} onChange={(e) => setCurrentTempo(e.target.value)} placeholder="Текущий темп" className="px-4 py-2 border border-gray-300 rounded-lg" />
+                                    <input type="number" value={targetTempo} onChange={(e) => setTargetTempo(e.target.value)} placeholder="Целевой темп" className="px-4 py-2 border border-gray-300 rounded-lg" />
+                                </div>
+                                <button onClick={addToLearnSong} className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Добавить</button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            const SettingsView = () => {
+                return (
+                    <div className="bg-white rounded-xl shadow-lg p-6">
+                        <h3 className="text-2xl font-bold mb-6">⚙️ Настройки</h3>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                <div>
+                                    <div className="font-semibold">Тёмная тема</div>
+                                    <div className="text-sm text-gray-600">Переключить на тёмное оформление</div>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked={darkTheme} onChange={(e) => setDarkTheme(e.target.checked)} className="sr-only peer" />
+                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                </label>
+                            </div>
+                            
+                            <div className="flex gap-2">
+                                <button onClick={exportData} className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold">
+                                    📥 Экспорт данных
+                                </button>
+                                <label className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold cursor-pointer text-center">
+                                    📤 Импорт данных
+                                    <input type="file" accept=".json" onChange={importData} className="hidden" />
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            const tabs = [
+                { id: 'calendar', name: '📅 Дневник', icon: '📅' },
+                { id: 'achievements', name: '🏆 Достижения', icon: '🏆' },
+                { id: 'notes', name: '📝 Заметки', icon: '📝' },
+                { id: 'settings', name: '⚙️ Настройки', icon: '⚙️' }
+            ];
 
             if (loading) {
-                return <div className="flex items-center justify-center h-screen">Загрузка...</div>;
+                return (
+                    <div className="flex items-center justify-center h-screen">
+                        <div className="text-2xl">⏳ Загрузка...</div>
+                    </div>
+                );
             }
 
             return (
                 <div className="min-h-screen bg-gradient-to-br from-purple-50 to-orange-50 p-4">
-                    <div className="max-w-2xl mx-auto">
-                        <div className="bg-white rounded-xl shadow-lg p-4 mb-4">
-                            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-orange-600 bg-clip-text text-transparent mb-4">
-                                🎸 Календарь Практики
+                    <div className="max-w-6xl mx-auto">
+                        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+                            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-orange-600 bg-clip-text text-transparent mb-4">
+                                🎸 Календарь Гитарной Практики
                             </h1>
-                            <div className="flex items-center justify-between mb-4">
-                                <button
-                                    onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}
-                                    className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm"
-                                >
-                                    ←
-                                </button>
-                                <h2 className="text-lg font-bold">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</h2>
-                                <button
-                                    onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}
-                                    className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm"
-                                >
-                                    →
-                                </button>
+
+                            <div className="flex gap-2 flex-wrap">
+                                {tabs.map(tab => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setCurrentTab(tab.id)}
+                                        className={`px-4 py-2 rounded-lg font-semibold transition ${
+                                            currentTab === tab.id ? 'bg-gradient-to-r from-purple-600 to-orange-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }`}
+                                    >
+                                        {tab.icon} {tab.name.replace(tab.icon + ' ', '')}
+                                    </button>
+                                ))}
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-xl shadow-lg p-4 mb-4">
-                            <div className="grid grid-cols-7 gap-1">
-                                {renderCalendar()}
-                            </div>
-                        </div>
-
-                        <div className="bg-gradient-to-r from-purple-100 to-orange-100 rounded-xl shadow-lg p-4 mb-4">
-                            <div className="text-center">
-                                <div className="text-xs text-gray-600 mb-1">💭 Мотивация дня</div>
-                                <div className="text-sm font-semibold text-gray-800 italic">"{dailyQuote}"</div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-xl shadow-lg p-4">
-                            <div className="flex items-center gap-4">
-                                <div className="flex-1">
-                                    <div className="text-xs text-gray-600">Дней подряд</div>
-                                    <div className="text-2xl font-bold text-orange-600">{calculateStreak()}</div>
-                                </div>
-                                <div className="text-4xl">🔥</div>
-                            </div>
-                        </div>
+                        {currentTab === 'calendar' && <CalendarView />}
+                        {currentTab === 'achievements' && <AchievementsView />}
+                        {currentTab === 'notes' && <NotesView />}
+                        {currentTab === 'settings' && <SettingsView />}
                     </div>
 
                     <PracticeModal />
