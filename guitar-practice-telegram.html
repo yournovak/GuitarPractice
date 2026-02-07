@@ -16,7 +16,7 @@
         .dark-theme .bg-gray-50 { background: #383838 !important; color: #e0e0e0 !important; }
         .dark-theme .bg-gray-100 { background: #404040 !important; color: #e0e0e0 !important; }
         .dark-theme .from-amber-50, .dark-theme .from-orange-50, .dark-theme .from-purple-50, .dark-theme .from-blue-50, .dark-theme .from-green-50, .dark-theme .from-red-50, .dark-theme .from-indigo-50, .dark-theme .from-yellow-100, .dark-theme .to-orange-100 { background: #3a3a3a !important; }
-        .dark-theme .bg-purple-50, .dark-theme .bg-orange-50, .dark-theme .bg-blue-50, .dark-theme .bg-indigo-50, .dark-theme .bg-green-50, .dark-theme .bg-teal-50, .dark-theme .bg-gray-500 { background: #3a3a3a !important; color: #e0e0e0 !important; }
+        .dark-theme .bg-purple-50, .dark-theme .bg-orange-50, .dark-theme .bg-blue-50, .dark-theme .bg-indigo-50, .dark-theme .bg-green-50, .dark-theme .bg-teal-50 { background: #3a3a3a !important; color: #e0e0e0 !important; }
         .dark-theme .text-gray-700, .dark-theme .text-gray-800, .dark-theme .text-gray-900 { color: #e0e0e0 !important; }
         .dark-theme .text-gray-600 { color: #b0b0b0 !important; }
         .dark-theme .text-gray-500 { color: #999 !important; }
@@ -28,6 +28,10 @@
         .dark-theme .from-purple-600.to-orange-600 { background: linear-gradient(to right, #9333ea, #ea580c) !important; -webkit-background-clip: text !important; background-clip: text !important; }
         .dark-theme .bg-clip-text { -webkit-background-clip: text !important; background-clip: text !important; }
         .dark-theme h1 { background: linear-gradient(to right, #a78bfa, #fb923c) !important; -webkit-background-clip: text !important; background-clip: text !important; }
+        .dark-theme .bg-gray-200 { background: #404040 !important; }
+        .calendar-day { cursor: pointer; transition: all 0.2s; }
+        .calendar-day:hover { transform: scale(1.05); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        .dark-theme .calendar-day:hover { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); }
     </style>
 </head>
 <body>
@@ -54,6 +58,10 @@
             const [searchFriendName, setSearchFriendName] = useState('');
             const [viewingFriend, setViewingFriend] = useState(null);
             const [notes, setNotes] = useState([]);
+            const [showAchievementModal, setShowAchievementModal] = useState(null);
+            const [showLearnedSongsModal, setShowLearnedSongsModal] = useState(false);
+            const [showToLearnSongsModal, setShowToLearnSongsModal] = useState(false);
+            const [showNotesModal, setShowNotesModal] = useState(false);
 
             const categories = {
                 techniques: { name: 'Техника', color: 'bg-orange-500', icon: '⚡' },
@@ -61,7 +69,7 @@
                 theory: { name: 'Теория', color: 'bg-green-500', icon: '📚' },
                 songs: { name: 'Игра песен', color: 'bg-pink-500', icon: '🎵' },
                 earTraining: { name: 'Развитие слуха', color: 'bg-blue-500', icon: '👂' },
-                other: { name: 'Прочее', color: 'bg-gray-500', icon: '🎼' }
+                other: { name: 'Прочее', color: 'bg-teal-500', icon: '🎼' }
             };
 
             const subcategories = {
@@ -226,7 +234,7 @@
             useEffect(() => { if (!loading) { if (tg.CloudStorage) tg.CloudStorage.setItem('notes', JSON.stringify(notes)); else localStorage.setItem('notes', JSON.stringify(notes)); } }, [notes, loading]);
 
             const formatDateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-            const getDaysInMonth = (date) => { const year = date.getFullYear(), month = date.getMonth(); return { daysInMonth: new Date(year, month + 1, 0).getDate(), startingDayOfWeek: new Date(year, month, 1).getDay() }; };
+            const getDaysInMonth = (date) => { const year = date.getFullYear(), month = date.getMonth(); const dayOfWeek = new Date(year, month, 1).getDay(); return { daysInMonth: new Date(year, month + 1, 0).getDate(), startingDayOfWeek: (dayOfWeek + 6) % 7 }; };
             const getTotalMinutes = (dateKey) => practiceData[dateKey]?.entries?.reduce((sum, e) => sum + (e.minutes || 0), 0) || 0;
             const calculateStreak = () => { const today = new Date(); today.setHours(0, 0, 0, 0); let streak = 0, currentDate = new Date(today); while (getTotalMinutes(formatDateKey(currentDate)) > 0) { streak++; currentDate.setDate(currentDate.getDate() - 1); } return streak; };
             const getTotalPracticeMinutes = () => Object.keys(practiceData).reduce((sum, key) => sum + getTotalMinutes(key), 0);
@@ -304,44 +312,44 @@
             const checkAllTechniquesWeek = () => { const today = new Date(), used = new Set(); for (let d = 0; d < 7; d++) { const date = new Date(today); date.setDate(today.getDate() - d); practiceData[formatDateKey(date)]?.entries?.forEach(e => e.selectedTechniques?.forEach(t => used.add(t))); } return used.size === subcategories.techniques.length; };
 
             const achievements = [
-                { id: 'streak_10', name: '10 дней подряд', icon: '🔥', type: 'streak', threshold: 10, xp: 50 },
-                { id: 'streak_30', name: '30 дней подряд', icon: '⚡', type: 'streak', threshold: 30, xp: 100 },
-                { id: 'streak_100', name: '100 дней подряд', icon: '💎', type: 'streak', threshold: 100, xp: 100 },
-                { id: 'streak_365', name: 'Год практики', icon: '👑', type: 'streak', threshold: 365, xp: 100 },
-                { id: 'night_owl', name: 'Ночная сова', icon: '🦉', checkFunc: () => checkTimeBasedAchievement(22, 4), xp: 20 },
-                { id: 'early_bird', name: 'Жаворонок', icon: '🐦', checkFunc: () => checkTimeBasedAchievement(6, 9), xp: 20 },
-                { id: 'marathon_2h', name: 'Марафонец 2ч', icon: '🏃', checkFunc: () => checkMarathonDay(120), xp: 50 },
-                { id: 'marathon_3h', name: 'Марафонец 3ч', icon: '🏃‍♂️', checkFunc: () => checkMarathonDay(180), xp: 50 },
-                { id: 'marathon_4h', name: 'Марафонец 4ч', icon: '🏃‍♀️', checkFunc: () => checkMarathonDay(240), xp: 50 },
-                { id: 'weekly_marathon', name: 'Терпение и труд (7д)', icon: '💪', checkFunc: checkWeeklyMarathon, xp: 100 },
-                { id: '14days_marathon', name: 'Терпение и труд (14д)', icon: '💪', checkFunc: check14DaysMarathon, xp: 100 },
-                { id: '28days_marathon', name: 'Терпение и труд (28д)', icon: '💪', checkFunc: check28DaysMarathon, xp: 100 },
-                { id: 'full_cycle', name: 'Полный цикл', icon: '🔄', checkFunc: checkFullCycle, xp: 50 },
-                { id: 'perfectionist', name: 'Перфекционист', icon: '✨', checkFunc: checkAllTechniquesWeek, xp: 100 },
-                { id: 'technique_1h', name: 'Техника: 1 час', icon: '⚡', type: 'techniques', threshold: 60, xp: 20 },
-                { id: 'technique_10h', name: 'Техника: 10 часов', icon: '🎸', type: 'techniques', threshold: 600, xp: 50 },
-                { id: 'technique_100h', name: 'Техника: 100 часов', icon: '🔥', type: 'techniques', threshold: 6000, xp: 100 },
-                { id: 'improv_1h', name: 'Импровизация: 1 час', icon: '🎵', type: 'improvisation', threshold: 60, xp: 20 },
-                { id: 'improv_10h', name: 'Импровизация: 10 часов', icon: '🎼', type: 'improvisation', threshold: 600, xp: 50 },
-                { id: 'improv_100h', name: 'Импровизация: 100 часов', icon: '🏆', type: 'improvisation', threshold: 6000, xp: 100 },
-                { id: 'theory_1h', name: 'Теория: 1 час', icon: '📚', type: 'theory', threshold: 60, xp: 20 },
-                { id: 'theory_10h', name: 'Теория: 10 часов', icon: '📖', type: 'theory', threshold: 600, xp: 50 },
-                { id: 'songs_1h', name: 'Песни: 1 час', icon: '🎵', type: 'songs', threshold: 60, xp: 20 },
-                { id: 'songs_10h', name: 'Песни: 10 часов', icon: '🎤', type: 'songs', threshold: 600, xp: 50 },
-                { id: 'songs_100h', name: 'Песни: 100 часов', icon: '🌟', type: 'songs', threshold: 6000, xp: 100 },
-                { id: 'ear_1h', name: 'Слух: 1 час', icon: '👂', type: 'earTraining', threshold: 60, xp: 20 },
-                { id: 'ear_10h', name: 'Слух: 10 часов', icon: '🎧', type: 'earTraining', threshold: 600, xp: 50 },
-                { id: 'other_1h', name: 'Прочее: 1 час', icon: '🎼', type: 'other', threshold: 60, xp: 20 },
-                { id: 'other_10h', name: 'Прочее: 10 часов', icon: '🎹', type: 'other', threshold: 600, xp: 50 },
-                { id: 'total_100h', name: 'Всего: 100 часов', icon: '⭐', checkFunc: () => getTotalPracticeMinutes() >= 6000, xp: 100 },
-                { id: 'total_500h', name: 'Всего: 500 часов', icon: '💫', checkFunc: () => getTotalPracticeMinutes() >= 30000, xp: 100 },
-                { id: 'total_1000h', name: 'Всего: 1000 часов', icon: '🏆', checkFunc: () => getTotalPracticeMinutes() >= 60000, xp: 100 },
-                { id: 'level_10', name: 'Достиг 10 уровня', icon: '🎖️', checkFunc: () => getLevelInfo().level >= 10, xp: 0 },
-                { id: 'level_20', name: 'Достиг 20 уровня', icon: '🎖️', checkFunc: () => getLevelInfo().level >= 20, xp: 0 },
-                { id: 'level_40', name: 'Достиг 40 уровня', icon: '🎖️', checkFunc: () => getLevelInfo().level >= 40, xp: 0 },
-                { id: 'level_60', name: 'Достиг 60 уровня', icon: '🎖️', checkFunc: () => getLevelInfo().level >= 60, xp: 0 },
-                { id: 'level_80', name: 'Достиг 80 уровня', icon: '🎖️', checkFunc: () => getLevelInfo().level >= 80, xp: 0 },
-                { id: 'level_100', name: 'Достиг 100 уровня', icon: '🎖️', checkFunc: () => getLevelInfo().level >= 100, xp: 0 }
+                { id: 'streak_10', name: '10 дней подряд', icon: '🔥', type: 'streak', threshold: 10, xp: 50, desc: 'Практикуйся 10 дней подряд без перерыва' },
+                { id: 'streak_30', name: '30 дней подряд', icon: '⚡', type: 'streak', threshold: 30, xp: 100, desc: 'Практикуйся 30 дней подряд без перерыва' },
+                { id: 'streak_100', name: '100 дней подряд', icon: '💎', type: 'streak', threshold: 100, xp: 100, desc: 'Практикуйся 100 дней подряд без перерыва' },
+                { id: 'streak_365', name: 'Год практики', icon: '👑', type: 'streak', threshold: 365, xp: 100, desc: 'Практикуйся 365 дней подряд без перерыва' },
+                { id: 'night_owl', name: 'Ночная сова', icon: '🦉', checkFunc: () => checkTimeBasedAchievement(22, 4), xp: 20, desc: 'Практикуйся хотя бы один раз между 22:00 и 04:00' },
+                { id: 'early_bird', name: 'Жаворонок', icon: '🐦', checkFunc: () => checkTimeBasedAchievement(6, 9), xp: 20, desc: 'Практикуйся хотя бы один раз между 6:00 и 9:00' },
+                { id: 'marathon_2h', name: 'Марафонец 2ч', icon: '🏃', checkFunc: () => checkMarathonDay(120), xp: 50, desc: 'Практикуйся 2 часа (120 минут) за один день' },
+                { id: 'marathon_3h', name: 'Марафонец 3ч', icon: '🏃‍♂️', checkFunc: () => checkMarathonDay(180), xp: 50, desc: 'Практикуйся 3 часа (180 минут) за один день' },
+                { id: 'marathon_4h', name: 'Марафонец 4ч', icon: '🏃‍♀️', checkFunc: () => checkMarathonDay(240), xp: 50, desc: 'Практикуйся 4 часа (240 минут) за один день' },
+                { id: 'weekly_marathon', name: 'Терпение и труд (7д)', icon: '💪', checkFunc: checkWeeklyMarathon, xp: 100, desc: 'Практикуйся минимум 2 часа каждый день в течение 7 дней подряд' },
+                { id: '14days_marathon', name: 'Терпение и труд (14д)', icon: '💪', checkFunc: check14DaysMarathon, xp: 100, desc: 'Практикуйся минимум 2 часа каждый день в течение 14 дней подряд' },
+                { id: '28days_marathon', name: 'Терпение и труд (28д)', icon: '💪', checkFunc: check28DaysMarathon, xp: 100, desc: 'Практикуйся минимум 2 часа каждый день в течение 28 дней подряд' },
+                { id: 'full_cycle', name: 'Полный цикл', icon: '🔄', checkFunc: checkFullCycle, xp: 50, desc: 'Практикуйся по всем 6 категориям за один день' },
+                { id: 'perfectionist', name: 'Перфекционист', icon: '✨', checkFunc: checkAllTechniquesWeek, xp: 100, desc: 'Практикуй все подкатегории техники в течение одной недели' },
+                { id: 'technique_1h', name: 'Техника: 1 час', icon: '⚡', type: 'techniques', threshold: 60, xp: 20, desc: 'Набери 1 час практики в категории Техника' },
+                { id: 'technique_10h', name: 'Техника: 10 часов', icon: '🎸', type: 'techniques', threshold: 600, xp: 50, desc: 'Набери 10 часов практики в категории Техника' },
+                { id: 'technique_100h', name: 'Техника: 100 часов', icon: '🔥', type: 'techniques', threshold: 6000, xp: 100, desc: 'Набери 100 часов практики в категории Техника' },
+                { id: 'improv_1h', name: 'Импровизация: 1 час', icon: '🎵', type: 'improvisation', threshold: 60, xp: 20, desc: 'Набери 1 час практики в категории Импровизация' },
+                { id: 'improv_10h', name: 'Импровизация: 10 часов', icon: '🎼', type: 'improvisation', threshold: 600, xp: 50, desc: 'Набери 10 часов практики в категории Импровизация' },
+                { id: 'improv_100h', name: 'Импровизация: 100 часов', icon: '🏆', type: 'improvisation', threshold: 6000, xp: 100, desc: 'Набери 100 часов практики в категории Импровизация' },
+                { id: 'theory_1h', name: 'Теория: 1 час', icon: '📚', type: 'theory', threshold: 60, xp: 20, desc: 'Набери 1 час практики в категории Теория' },
+                { id: 'theory_10h', name: 'Теория: 10 часов', icon: '📖', type: 'theory', threshold: 600, xp: 50, desc: 'Набери 10 часов практики в категории Теория' },
+                { id: 'songs_1h', name: 'Песни: 1 час', icon: '🎵', type: 'songs', threshold: 60, xp: 20, desc: 'Набери 1 час практики в категории Игра песен' },
+                { id: 'songs_10h', name: 'Песни: 10 часов', icon: '🎤', type: 'songs', threshold: 600, xp: 50, desc: 'Набери 10 часов практики в категории Игра песен' },
+                { id: 'songs_100h', name: 'Песни: 100 часов', icon: '🌟', type: 'songs', threshold: 6000, xp: 100, desc: 'Набери 100 часов практики в категории Игра песен' },
+                { id: 'ear_1h', name: 'Слух: 1 час', icon: '👂', type: 'earTraining', threshold: 60, xp: 20, desc: 'Набери 1 час практики в категории Развитие слуха' },
+                { id: 'ear_10h', name: 'Слух: 10 часов', icon: '🎧', type: 'earTraining', threshold: 600, xp: 50, desc: 'Набери 10 часов практики в категории Развитие слуха' },
+                { id: 'other_1h', name: 'Прочее: 1 час', icon: '🎼', type: 'other', threshold: 60, xp: 20, desc: 'Набери 1 час практики в категории Прочее' },
+                { id: 'other_10h', name: 'Прочее: 10 часов', icon: '🎹', type: 'other', threshold: 600, xp: 50, desc: 'Набери 10 часов практики в категории Прочее' },
+                { id: 'total_100h', name: 'Всего: 100 часов', icon: '⭐', checkFunc: () => getTotalPracticeMinutes() >= 6000, xp: 100, desc: 'Набери 100 часов практики суммарно по всем категориям' },
+                { id: 'total_500h', name: 'Всего: 500 часов', icon: '💫', checkFunc: () => getTotalPracticeMinutes() >= 30000, xp: 100, desc: 'Набери 500 часов практики суммарно по всем категориям' },
+                { id: 'total_1000h', name: 'Всего: 1000 часов', icon: '🏆', checkFunc: () => getTotalPracticeMinutes() >= 60000, xp: 100, desc: 'Набери 1000 часов практики суммарно по всем категориям' },
+                { id: 'level_10', name: 'Достиг 10 уровня', icon: '🎖️', checkFunc: () => getLevelInfo().level >= 10, xp: 0, desc: 'Достигни 10 уровня в системе прогресса' },
+                { id: 'level_20', name: 'Достиг 20 уровня', icon: '🎖️', checkFunc: () => getLevelInfo().level >= 20, xp: 0, desc: 'Достигни 20 уровня в системе прогресса' },
+                { id: 'level_40', name: 'Достиг 40 уровня', icon: '🎖️', checkFunc: () => getLevelInfo().level >= 40, xp: 0, desc: 'Достигни 40 уровня в системе прогресса' },
+                { id: 'level_60', name: 'Достиг 60 уровня', icon: '🎖️', checkFunc: () => getLevelInfo().level >= 60, xp: 0, desc: 'Достигни 60 уровня в системе прогресса' },
+                { id: 'level_80', name: 'Достиг 80 уровня', icon: '🎖️', checkFunc: () => getLevelInfo().level >= 80, xp: 0, desc: 'Достигни 80 уровня в системе прогресса' },
+                { id: 'level_100', name: 'Достиг 100 уровня', icon: '🎖️', checkFunc: () => getLevelInfo().level >= 100, xp: 0, desc: 'Достигни максимальный 100 уровень в системе прогресса' }
             ];
 
             const getUnlockedAchievements = () => { const streak = calculateStreak(); return achievements.filter(a => a.checkFunc ? a.checkFunc() : a.type === 'streak' ? streak >= a.threshold : a.technique ? getTechniqueMinutes(a.technique) >= a.threshold : getCategoryMinutes(a.type) >= a.threshold); };
@@ -362,13 +370,13 @@
             const renderCalendar = () => {
                 const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentDate);
                 const days = [];
-                ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'].forEach(d => days.push(<div key={`h-${d}`} className="text-center font-semibold text-gray-600 p-2 text-xs">{d}</div>));
+                ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].forEach(d => days.push(<div key={`h-${d}`} className="text-center font-semibold text-gray-600 p-2 text-xs">{d}</div>));
                 for (let i = 0; i < startingDayOfWeek; i++) days.push(<div key={`e-${i}`} className="p-2"></div>);
                 for (let day = 1; day <= daysInMonth; day++) {
                     const dateKey = formatDateKey(new Date(currentDate.getFullYear(), currentDate.getMonth(), day));
                     const totalMinutes = getTotalMinutes(dateKey);
                     days.push(
-                        <div key={day} onClick={() => handleDateClick(day)} className={`p-2 border rounded-lg cursor-pointer h-16 flex flex-col ${totalMinutes > 0 ? 'bg-gradient-to-br from-amber-50 to-orange-50 border-orange-200' : 'border-gray-200'}`}>
+                        <div key={day} onClick={() => handleDateClick(day)} className={`calendar-day p-2 border rounded-lg h-16 flex flex-col ${totalMinutes > 0 ? 'bg-gradient-to-br from-amber-50 to-orange-50 border-orange-200' : 'border-gray-200'}`}>
                             <div className="font-semibold text-gray-700 text-xs">{day}</div>
                             {totalMinutes > 0 && <div className="text-xs mt-auto text-orange-600 font-semibold">{totalMinutes}м</div>}
                         </div>
@@ -531,20 +539,35 @@
             const AchievementsView = () => {
                 const unlocked = getUnlockedAchievements();
                 return (
-                    <div className="bg-white rounded-xl shadow-lg p-4">
-                        <h3 className="text-xl font-bold mb-4">🏆 Достижения ({unlocked.length}/{achievements.length})</h3>
-                        <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-                            {achievements.map(a => {
-                                const isUnlocked = unlocked.some(u => u.id === a.id);
-                                return (
-                                    <div key={a.id} className={`p-2 rounded-lg text-center ${isUnlocked ? 'bg-gradient-to-br from-yellow-100 to-orange-100 border-2 border-yellow-400' : 'bg-gray-100 opacity-40 grayscale'}`}>
-                                        <div className="text-2xl mb-1">{a.icon}</div>
-                                        <div className="text-xs font-semibold leading-tight">{a.name}</div>
-                                    </div>
-                                );
-                            })}
+                    <>
+                        <div className="bg-white rounded-xl shadow-lg p-4">
+                            <h3 className="text-xl font-bold mb-4">🏆 Достижения ({unlocked.length}/{achievements.length})</h3>
+                            <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                                {achievements.map(a => {
+                                    const isUnlocked = unlocked.some(u => u.id === a.id);
+                                    return (
+                                        <div key={a.id} onClick={() => setShowAchievementModal(a)} className={`p-2 rounded-lg text-center cursor-pointer transition-transform hover:scale-105 ${isUnlocked ? 'bg-gradient-to-br from-yellow-100 to-orange-100 border-2 border-yellow-400' : 'bg-gray-100 opacity-40 grayscale'}`}>
+                                            <div className="text-2xl mb-1">{a.icon}</div>
+                                            <div className="text-xs font-semibold leading-tight">{a.name}</div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
-                    </div>
+                        {showAchievementModal && (
+                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowAchievementModal(null)}>
+                                <div className="bg-white rounded-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+                                    <div className="text-center">
+                                        <div className="text-6xl mb-4">{showAchievementModal.icon}</div>
+                                        <h3 className="text-2xl font-bold mb-2">{showAchievementModal.name}</h3>
+                                        <p className="text-gray-600 mb-4">{showAchievementModal.desc}</p>
+                                        <div className="text-sm text-purple-600 font-semibold mb-4">+{showAchievementModal.xp} опыта</div>
+                                        <button onClick={() => setShowAchievementModal(null)} className="w-full bg-gradient-to-r from-purple-600 to-orange-600 text-white py-3 rounded-lg font-bold">Закрыть</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </>
                 );
             };
 
@@ -553,46 +576,114 @@
                 const [newToLearn, setNewToLearn] = useState('');
                 const [currentTempo, setCurrentTempo] = useState('');
                 const [targetTempo, setTargetTempo] = useState('');
+                const [newNote, setNewNote] = useState('');
+                
                 return (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="bg-white rounded-xl shadow-lg p-4">
-                            <h3 className="text-lg font-bold mb-3">✅ Выученные ({learnedSongs.length})</h3>
-                            <div className="space-y-2 mb-3 max-h-60 overflow-y-auto">
-                                {learnedSongs.map((s, i) => (
-                                    <div key={i} className="flex justify-between p-2 bg-green-50 rounded-lg text-sm">
-                                        <span>{s.name}</span>
-                                        <button onClick={() => setLearnedSongs(learnedSongs.filter((_, idx) => idx !== i))} className="text-red-500">✕</button>
-                                    </div>
-                                ))}
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="bg-white rounded-xl shadow-lg p-4 cursor-pointer hover:shadow-xl transition-shadow" onClick={() => setShowLearnedSongsModal(true)}>
+                                <h3 className="text-lg font-bold mb-2">✅ Выученные</h3>
+                                <div className="text-3xl font-bold text-green-600">{learnedSongs.length}</div>
+                                <p className="text-sm text-gray-600 mt-2">Нажмите для просмотра</p>
                             </div>
-                            <div className="flex gap-2">
-                                <input type="text" value={newLearned} onChange={(e) => setNewLearned(e.target.value)} placeholder="Название" className="flex-1 px-3 py-2 border rounded-lg text-sm" onKeyPress={(e) => e.key === 'Enter' && newLearned && (setLearnedSongs([...learnedSongs, { name: newLearned, date: new Date().toISOString() }]), setNewLearned(''))} />
-                                <button onClick={() => newLearned && (setLearnedSongs([...learnedSongs, { name: newLearned, date: new Date().toISOString() }]), setNewLearned(''))} className="px-3 py-2 bg-green-600 text-white rounded-lg">+</button>
+                            
+                            <div className="bg-white rounded-xl shadow-lg p-4 cursor-pointer hover:shadow-xl transition-shadow" onClick={() => setShowToLearnSongsModal(true)}>
+                                <h3 className="text-lg font-bold mb-2">🎯 Планирую</h3>
+                                <div className="text-3xl font-bold text-blue-600">{toLearnSongs.length}</div>
+                                <p className="text-sm text-gray-600 mt-2">Нажмите для просмотра</p>
+                            </div>
+                            
+                            <div className="bg-white rounded-xl shadow-lg p-4 cursor-pointer hover:shadow-xl transition-shadow" onClick={() => setShowNotesModal(true)}>
+                                <h3 className="text-lg font-bold mb-2">📝 Заметки</h3>
+                                <div className="text-3xl font-bold text-purple-600">{notes.length}</div>
+                                <p className="text-sm text-gray-600 mt-2">Нажмите для просмотра</p>
                             </div>
                         </div>
-                        <div className="bg-white rounded-xl shadow-lg p-4">
-                            <h3 className="text-lg font-bold mb-3">🎯 Планирую ({toLearnSongs.length})</h3>
-                            <div className="space-y-2 mb-3 max-h-60 overflow-y-auto">
-                                {toLearnSongs.map((s, i) => (
-                                    <div key={i} className="p-2 bg-blue-50 rounded-lg">
-                                        <div className="flex justify-between mb-1">
-                                            <span className="text-sm font-semibold">{s.name}</span>
-                                            <button onClick={() => setToLearnSongs(toLearnSongs.filter((_, idx) => idx !== i))} className="text-red-500">✕</button>
-                                        </div>
-                                        <div className="text-xs text-gray-600">{s.currentTempo} → {s.targetTempo} bpm</div>
+                        
+                        {showLearnedSongsModal && (
+                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowLearnedSongsModal(false)}>
+                                <div className="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
+                                    <h3 className="text-xl font-bold mb-4">✅ Выученные песни ({learnedSongs.length})</h3>
+                                    <div className="space-y-2 mb-4">
+                                        {learnedSongs.map((s, i) => (
+                                            <div key={i} className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                                                <div>
+                                                    <div className="font-semibold">{s.name}</div>
+                                                    <div className="text-xs text-gray-600">Выучена: {new Date(s.date).toLocaleDateString('ru-RU')}</div>
+                                                </div>
+                                                <button onClick={() => setLearnedSongs(learnedSongs.filter((_, idx) => idx !== i))} className="text-red-500 px-2">✕</button>
+                                            </div>
+                                        ))}
+                                        {learnedSongs.length === 0 && <div className="text-center text-gray-500 py-4">Нет выученных песен</div>}
                                     </div>
-                                ))}
-                            </div>
-                            <div className="space-y-2">
-                                <input type="text" value={newToLearn} onChange={(e) => setNewToLearn(e.target.value)} placeholder="Название" className="w-full px-3 py-2 border rounded-lg text-sm" />
-                                <div className="grid grid-cols-2 gap-2">
-                                    <input type="number" value={currentTempo} onChange={(e) => setCurrentTempo(e.target.value)} placeholder="Текущий" className="px-3 py-2 border rounded-lg text-sm" />
-                                    <input type="number" value={targetTempo} onChange={(e) => setTargetTempo(e.target.value)} placeholder="Цель" className="px-3 py-2 border rounded-lg text-sm" />
+                                    <div className="flex gap-2 mb-4">
+                                        <input type="text" value={newLearned} onChange={(e) => setNewLearned(e.target.value)} placeholder="Название песни" className="flex-1 px-3 py-2 border rounded-lg" onKeyPress={(e) => e.key === 'Enter' && newLearned && (setLearnedSongs([...learnedSongs, { name: newLearned, date: new Date().toISOString() }]), setNewLearned(''))} />
+                                        <button onClick={() => newLearned && (setLearnedSongs([...learnedSongs, { name: newLearned, date: new Date().toISOString() }]), setNewLearned(''))} className="px-4 py-2 bg-green-600 text-white rounded-lg">Добавить</button>
+                                    </div>
+                                    <button onClick={() => setShowLearnedSongsModal(false)} className="w-full bg-gray-600 text-white py-3 rounded-lg font-bold">Закрыть</button>
                                 </div>
-                                <button onClick={() => newToLearn && (setToLearnSongs([...toLearnSongs, { name: newToLearn, currentTempo: currentTempo || '0', targetTempo: targetTempo || '120', date: new Date().toISOString() }]), setNewToLearn(''), setCurrentTempo(''), setTargetTempo(''))} className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg text-sm">Добавить</button>
                             </div>
-                        </div>
-                    </div>
+                        )}
+                        
+                        {showToLearnSongsModal && (
+                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowToLearnSongsModal(false)}>
+                                <div className="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
+                                    <h3 className="text-xl font-bold mb-4">🎯 Планирую выучить ({toLearnSongs.length})</h3>
+                                    <div className="space-y-2 mb-4">
+                                        {toLearnSongs.map((s, i) => (
+                                            <div key={i} className="p-3 bg-blue-50 rounded-lg">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div>
+                                                        <div className="font-semibold">{s.name}</div>
+                                                        <div className="text-sm text-gray-600">Темп: {s.currentTempo} → {s.targetTempo} bpm</div>
+                                                        <div className="text-xs text-gray-600">Добавлена: {new Date(s.date).toLocaleDateString('ru-RU')}</div>
+                                                    </div>
+                                                    <button onClick={() => setToLearnSongs(toLearnSongs.filter((_, idx) => idx !== i))} className="text-red-500 px-2">✕</button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {toLearnSongs.length === 0 && <div className="text-center text-gray-500 py-4">Нет планируемых песен</div>}
+                                    </div>
+                                    <div className="space-y-2 mb-4">
+                                        <input type="text" value={newToLearn} onChange={(e) => setNewToLearn(e.target.value)} placeholder="Название песни" className="w-full px-3 py-2 border rounded-lg" />
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <input type="number" value={currentTempo} onChange={(e) => setCurrentTempo(e.target.value)} placeholder="Текущий темп" className="px-3 py-2 border rounded-lg" />
+                                            <input type="number" value={targetTempo} onChange={(e) => setTargetTempo(e.target.value)} placeholder="Целевой темп" className="px-3 py-2 border rounded-lg" />
+                                        </div>
+                                        <button onClick={() => newToLearn && (setToLearnSongs([...toLearnSongs, { name: newToLearn, currentTempo: currentTempo || '0', targetTempo: targetTempo || '120', date: new Date().toISOString() }]), setNewToLearn(''), setCurrentTempo(''), setTargetTempo(''))} className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg">Добавить</button>
+                                    </div>
+                                    <button onClick={() => setShowToLearnSongsModal(false)} className="w-full bg-gray-600 text-white py-3 rounded-lg font-bold">Закрыть</button>
+                                </div>
+                            </div>
+                        )}
+                        
+                        {showNotesModal && (
+                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowNotesModal(false)}>
+                                <div className="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
+                                    <h3 className="text-xl font-bold mb-4">📝 Заметки ({notes.length})</h3>
+                                    <div className="space-y-2 mb-4">
+                                        {notes.map((note, i) => (
+                                            <div key={i} className="p-3 bg-purple-50 rounded-lg">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div className="flex-1">
+                                                        <div className="text-sm whitespace-pre-wrap">{note.text}</div>
+                                                        <div className="text-xs text-gray-600 mt-1">{new Date(note.date).toLocaleDateString('ru-RU')} {new Date(note.date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</div>
+                                                    </div>
+                                                    <button onClick={() => setNotes(notes.filter((_, idx) => idx !== i))} className="text-red-500 px-2">✕</button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {notes.length === 0 && <div className="text-center text-gray-500 py-4">Нет заметок</div>}
+                                    </div>
+                                    <div className="space-y-2 mb-4">
+                                        <textarea value={newNote} onChange={(e) => setNewNote(e.target.value)} placeholder="Новая заметка..." className="w-full px-3 py-2 border rounded-lg" rows="3"></textarea>
+                                        <button onClick={() => newNote && (setNotes([...notes, { id: Date.now(), text: newNote, date: new Date().toISOString() }]), setNewNote(''))} className="w-full px-3 py-2 bg-purple-600 text-white rounded-lg">Добавить</button>
+                                    </div>
+                                    <button onClick={() => setShowNotesModal(false)} className="w-full bg-gray-600 text-white py-3 rounded-lg font-bold">Закрыть</button>
+                                </div>
+                            </div>
+                        )}
+                    </>
                 );
             };
 
@@ -711,8 +802,8 @@
 
             const tabs = [
                 { id: 'calendar', name: 'Дневник', icon: '📅' },
-                { id: 'achievements', name: 'Достижения', icon: '🏆' },
                 { id: 'notes', name: 'Заметки', icon: '📝' },
+                { id: 'achievements', name: 'Достижения', icon: '🏆' },
                 { id: 'profile', name: 'Профиль', icon: '👤' }
             ];
 
@@ -723,7 +814,7 @@
                     <div className="max-w-6xl mx-auto">
                         <div className="bg-white rounded-xl shadow-lg p-4 mb-4">
                             <div className="flex justify-between items-center mb-3">
-                                <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-orange-600">🎸 Календарь Гитарной Практики</h1>
+                                <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-orange-600">🎸 Практика</h1>
                                 <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-orange-600 rounded-full flex items-center justify-center text-white text-sm font-bold overflow-hidden">
                                         {userProfile.avatar ? <img src={userProfile.avatar} className="w-full h-full object-cover" alt="Avatar" /> : userProfile.username[0]?.toUpperCase()}
