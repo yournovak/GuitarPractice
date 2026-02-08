@@ -16,7 +16,7 @@
         .dark-theme .bg-gray-50 { background: #383838 !important; color: #e0e0e0 !important; }
         .dark-theme .bg-gray-100 { background: #404040 !important; color: #e0e0e0 !important; }
         .dark-theme .from-amber-50, .dark-theme .from-orange-50, .dark-theme .from-purple-50, .dark-theme .from-blue-50, .dark-theme .from-green-50, .dark-theme .from-red-50, .dark-theme .from-indigo-50, .dark-theme .from-yellow-100, .dark-theme .to-orange-100 { background: #3a3a3a !important; }
-        .dark-theme .bg-purple-50, .dark-theme .bg-orange-50, .dark-theme .bg-blue-50, .dark-theme .bg-indigo-50, .dark-theme .bg-green-50, .dark-theme .bg-teal-50 { background: #3a3a3a !important; color: #e0e0e0 !important; }
+        .dark-theme .bg-purple-50, .dark-theme .bg-orange-50, .dark-theme .bg-blue-50, .dark-theme .bg-indigo-50, .dark-theme .bg-green-50, .dark-theme .bg-teal-50, .dark-theme .bg-red-50 { background: #3a3a3a !important; color: #e0e0e0 !important; }
         .dark-theme .text-gray-700, .dark-theme .text-gray-800, .dark-theme .text-gray-900 { color: #e0e0e0 !important; }
         .dark-theme .text-gray-600 { color: #b0b0b0 !important; }
         .dark-theme .text-gray-500 { color: #999 !important; }
@@ -28,7 +28,8 @@
         .dark-theme .from-purple-600.to-orange-600 { background: linear-gradient(to right, #9333ea, #ea580c) !important; -webkit-background-clip: text !important; background-clip: text !important; }
         .dark-theme .bg-clip-text { -webkit-background-clip: text !important; background-clip: text !important; }
         .dark-theme h1 { background: linear-gradient(to right, #a78bfa, #fb923c) !important; -webkit-background-clip: text !important; background-clip: text !important; }
-        .dark-theme .bg-gray-200 { background: #404040 !important; }
+        .dark-theme .bg-gray-200 { background: #4a4a4a !important; }
+        .dark-theme .from-purple-50.to-orange-50 { background: linear-gradient(to right, rgba(147, 51, 234, 0.2), rgba(234, 88, 12, 0.2)) !important; }
         .calendar-day { cursor: pointer; transition: all 0.2s; }
         .calendar-day:hover { transform: scale(1.05); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
         .dark-theme .calendar-day:hover { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); }
@@ -335,7 +336,60 @@
             const formatDateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
             const getDaysInMonth = (date) => { const year = date.getFullYear(), month = date.getMonth(); const dayOfWeek = new Date(year, month, 1).getDay(); return { daysInMonth: new Date(year, month + 1, 0).getDate(), startingDayOfWeek: (dayOfWeek + 6) % 7 }; };
             const getTotalMinutes = (dateKey) => practiceData[dateKey]?.entries?.reduce((sum, e) => sum + (e.minutes || 0), 0) || 0;
-            const calculateStreak = () => { const today = new Date(); today.setHours(0, 0, 0, 0); let streak = 0, currentDate = new Date(today); while (getTotalMinutes(formatDateKey(currentDate)) > 0) { streak++; currentDate.setDate(currentDate.getDate() - 1); } return streak; };
+            const calculateStreak = () => { 
+                const today = new Date(); 
+                today.setHours(0, 0, 0, 0); 
+                let streak = 0;
+                let currentDate = new Date(today);
+                
+                // Если сегодня есть практика, считаем с сегодня
+                if (getTotalMinutes(formatDateKey(currentDate)) > 0) {
+                    while (getTotalMinutes(formatDateKey(currentDate)) > 0) { 
+                        streak++; 
+                        currentDate.setDate(currentDate.getDate() - 1); 
+                    }
+                } else {
+                    // Если сегодня нет практики, проверяем вчера
+                    currentDate.setDate(currentDate.getDate() - 1);
+                    while (getTotalMinutes(formatDateKey(currentDate)) > 0) { 
+                        streak++; 
+                        currentDate.setDate(currentDate.getDate() - 1); 
+                    }
+                }
+                
+                return streak; 
+            };
+            
+            const calculateMaxStreak = () => {
+                const allDates = Object.keys(practiceData).sort();
+                if (allDates.length === 0) return 0;
+                
+                let maxStreak = 0;
+                let currentStreak = 0;
+                let prevDate = null;
+                
+                allDates.forEach(dateKey => {
+                    if (getTotalMinutes(dateKey) > 0) {
+                        if (prevDate === null) {
+                            currentStreak = 1;
+                        } else {
+                            const prev = new Date(prevDate);
+                            const curr = new Date(dateKey);
+                            const diffDays = Math.floor((curr - prev) / (1000 * 60 * 60 * 24));
+                            
+                            if (diffDays === 1) {
+                                currentStreak++;
+                            } else {
+                                maxStreak = Math.max(maxStreak, currentStreak);
+                                currentStreak = 1;
+                            }
+                        }
+                        prevDate = dateKey;
+                    }
+                });
+                
+                return Math.max(maxStreak, currentStreak);
+            };
             const getTotalPracticeMinutes = () => Object.keys(practiceData).reduce((sum, key) => sum + getTotalMinutes(key), 0);
             const getMinutesThisWeek = () => { const today = new Date(), start = new Date(today); start.setDate(today.getDate() - today.getDay()); start.setHours(0, 0, 0, 0); let total = 0; for (let d = new Date(start); d <= today; d.setDate(d.getDate() + 1)) total += getTotalMinutes(formatDateKey(d)); return total; };
             const getMinutesThisMonth = () => { const today = new Date(), start = new Date(today.getFullYear(), today.getMonth(), 1); let total = 0; for (let d = new Date(start); d <= today; d.setDate(d.getDate() + 1)) total += getTotalMinutes(formatDateKey(d)); return total; };
@@ -670,6 +724,73 @@
                 );
             };
 
+            const HistoryView = () => {
+                // Собираем все записи из practiceData в хронологическом порядке
+                const historyEntries = [];
+                
+                Object.keys(practiceData).forEach(dateKey => {
+                    const dayData = practiceData[dateKey];
+                    if (dayData && dayData.entries) {
+                        dayData.entries.forEach(entry => {
+                            historyEntries.push({
+                                ...entry,
+                                dateKey: dateKey,
+                                date: new Date(entry.timestamp || dateKey)
+                            });
+                        });
+                    }
+                });
+                
+                // Сортируем по дате (новые сверху)
+                historyEntries.sort((a, b) => b.date - a.date);
+                
+                return (
+                    <div className="bg-white rounded-xl shadow-lg p-4">
+                        <h3 className="text-xl font-bold mb-4">📜 История практики ({historyEntries.length})</h3>
+                        {historyEntries.length === 0 ? (
+                            <div className="text-center text-gray-500 py-8">
+                                <div className="text-4xl mb-2">📝</div>
+                                <div>История практики пуста</div>
+                                <div className="text-sm mt-1">Добавьте первую запись в дневнике!</div>
+                            </div>
+                        ) : (
+                            <div className="space-y-3 max-h-[600px] overflow-y-auto">
+                                {historyEntries.map((entry, idx) => (
+                                    <div key={entry.id || idx} className="p-3 bg-gradient-to-r from-purple-50 to-orange-50 rounded-lg border-l-4 border-purple-500">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-2xl">{categories[entry.category]?.icon}</span>
+                                                <div>
+                                                    <div className="font-semibold text-gray-800">{categories[entry.category]?.name}</div>
+                                                    <div className="text-xs text-gray-600">
+                                                        {new Date(entry.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })} 
+                                                        {' в '} 
+                                                        {new Date(entry.date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="font-bold text-orange-600">{entry.minutes} мин</div>
+                                            </div>
+                                        </div>
+                                        {entry.details && (
+                                            <div className="text-sm text-gray-700 mt-2 bg-white bg-opacity-50 p-2 rounded">
+                                                {entry.details}
+                                            </div>
+                                        )}
+                                        {entry.sourceLink && (
+                                            <a href={entry.sourceLink} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 inline-block">
+                                                🔗 Ссылка на материал
+                                            </a>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
             const NotesView = () => {
                 const [newLearned, setNewLearned] = useState('');
                 const [newToLearn, setNewToLearn] = useState('');
@@ -851,8 +972,9 @@
                                     <div className="bg-gradient-to-r from-purple-600 to-orange-600 h-2 rounded-full transition-all duration-500" style={{width: `${getLevelInfo().progress}%`}}></div>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-3 gap-2 mb-4">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
                                 <div className="p-2 bg-orange-50 rounded-lg"><div className="text-xs text-gray-600">Дней подряд</div><div className="text-base font-bold text-orange-600">{calculateStreak()}</div></div>
+                                <div className="p-2 bg-red-50 rounded-lg"><div className="text-xs text-gray-600">Максимум</div><div className="text-base font-bold text-red-600">{calculateMaxStreak()}</div></div>
                                 <div className="p-2 bg-purple-50 rounded-lg"><div className="text-xs text-gray-600">Всего</div><div className="text-base font-bold text-purple-600">{Math.floor(getTotalPracticeMinutes() / 60)}ч {getTotalPracticeMinutes() % 60}м</div></div>
                                 <div className="p-2 bg-blue-50 rounded-lg"><div className="text-xs text-gray-600">Достижений</div><div className="text-base font-bold text-blue-600">{unlocked.length}/{achievements.length}</div></div>
                             </div>
@@ -901,6 +1023,7 @@
 
             const tabs = [
                 { id: 'calendar', name: 'Дневник', icon: '📅' },
+                { id: 'history', name: 'История', icon: '📜' },
                 { id: 'notes', name: 'Заметки', icon: '📝' },
                 { id: 'achievements', name: 'Достижения', icon: '🏆' },
                 { id: 'profile', name: 'Профиль', icon: '👤' }
@@ -913,7 +1036,7 @@
                     <div className="max-w-6xl mx-auto">
                         <div className="bg-white rounded-xl shadow-lg p-4 mb-4">
                             <div className="flex justify-between items-center mb-3">
-                                <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-orange-600">🎸 Практика</h1>
+                                <h1 className="text-base sm:text-lg md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-orange-600 leading-tight">🎸 Календарь гитарной практики</h1>
                                 <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-orange-600 rounded-full flex items-center justify-center text-white text-sm font-bold overflow-hidden">
                                         {userProfile.avatar ? <img src={userProfile.avatar} className="w-full h-full object-cover" alt="Avatar" /> : userProfile.username[0]?.toUpperCase()}
@@ -930,6 +1053,7 @@
                             </div>
                         </div>
                         {currentTab === 'calendar' && <CalendarView />}
+                        {currentTab === 'history' && <HistoryView />}
                         {currentTab === 'achievements' && <AchievementsView />}
                         {currentTab === 'notes' && <NotesView />}
                         {currentTab === 'profile' && <ProfileView />}
