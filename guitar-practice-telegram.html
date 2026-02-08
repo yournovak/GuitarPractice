@@ -54,10 +54,6 @@
             const [dailyQuote, setDailyQuote] = useState('');
             const [loading, setLoading] = useState(true);
             const [userProfile, setUserProfile] = useState({ username: '', avatar: '', registrationDate: new Date().toISOString(), lastLogin: new Date().toISOString() });
-            const [friends, setFriends] = useState([]);
-            const [friendRequests, setFriendRequests] = useState([]);
-            const [searchFriendName, setSearchFriendName] = useState('');
-            const [viewingFriend, setViewingFriend] = useState(null);
             const [notes, setNotes] = useState([]);
             const [showAchievementModal, setShowAchievementModal] = useState(null);
             const [showLearnedSongsModal, setShowLearnedSongsModal] = useState(false);
@@ -292,21 +288,19 @@
                     if (telegramUser) setUserProfile(prev => ({ ...prev, username: telegramUser.username || telegramUser.first_name || 'Гитарист', avatar: telegramUser.photo_url || '' }));
                     
                     if (tg.CloudStorage) {
-                        tg.CloudStorage.getItems(['practiceData', 'learnedSongs', 'toLearnSongs', 'darkTheme', 'userProfile', 'friends', 'friendRequests', 'notes'], (error, result) => {
+                        tg.CloudStorage.getItems(['practiceData', 'learnedSongs', 'toLearnSongs', 'darkTheme', 'userProfile', 'notes'], (error, result) => {
                             if (!error && result) {
                                 if (result.practiceData) setPracticeData(JSON.parse(result.practiceData));
                                 if (result.learnedSongs) setLearnedSongs(JSON.parse(result.learnedSongs));
                                 if (result.toLearnSongs) setToLearnSongs(JSON.parse(result.toLearnSongs));
                                 if (result.darkTheme) setDarkTheme(JSON.parse(result.darkTheme));
                                 if (result.userProfile) setUserProfile(prev => ({ ...prev, ...JSON.parse(result.userProfile), lastLogin: new Date().toISOString() }));
-                                if (result.friends) setFriends(JSON.parse(result.friends));
-                                if (result.friendRequests) setFriendRequests(JSON.parse(result.friendRequests));
                                 if (result.notes) setNotes(JSON.parse(result.notes));
                             }
                             setLoading(false);
                         });
                     } else {
-                        ['practiceData', 'learnedSongs', 'toLearnSongs', 'darkTheme', 'userProfile', 'friends', 'notes'].forEach(key => {
+                        ['practiceData', 'learnedSongs', 'toLearnSongs', 'darkTheme', 'userProfile', 'notes'].forEach(key => {
                             const data = localStorage.getItem(key);
                             if (data) {
                                 if (key === 'practiceData') setPracticeData(JSON.parse(data));
@@ -314,7 +308,6 @@
                                 else if (key === 'toLearnSongs') setToLearnSongs(JSON.parse(data));
                                 else if (key === 'darkTheme') setDarkTheme(JSON.parse(data));
                                 else if (key === 'userProfile') setUserProfile(JSON.parse(data));
-                                else if (key === 'friends') setFriends(JSON.parse(data));
                                 else if (key === 'notes') setNotes(JSON.parse(data));
                             }
                         });
@@ -330,7 +323,6 @@
             useEffect(() => { if (!loading) { if (tg.CloudStorage) tg.CloudStorage.setItem('learnedSongs', JSON.stringify(learnedSongs)); else localStorage.setItem('learnedSongs', JSON.stringify(learnedSongs)); } }, [learnedSongs, loading]);
             useEffect(() => { if (!loading) { if (tg.CloudStorage) tg.CloudStorage.setItem('toLearnSongs', JSON.stringify(toLearnSongs)); else localStorage.setItem('toLearnSongs', JSON.stringify(toLearnSongs)); } }, [toLearnSongs, loading]);
             useEffect(() => { if (!loading) { if (tg.CloudStorage) tg.CloudStorage.setItem('userProfile', JSON.stringify(userProfile)); else localStorage.setItem('userProfile', JSON.stringify(userProfile)); } }, [userProfile, loading]);
-            useEffect(() => { if (!loading) { if (tg.CloudStorage) tg.CloudStorage.setItem('friends', JSON.stringify(friends)); else localStorage.setItem('friends', JSON.stringify(friends)); } }, [friends, loading]);
             useEffect(() => { if (!loading) { if (tg.CloudStorage) tg.CloudStorage.setItem('notes', JSON.stringify(notes)); else localStorage.setItem('notes', JSON.stringify(notes)); } }, [notes, loading]);
 
             const formatDateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -910,30 +902,7 @@
             const ProfileView = () => {
                 const [editingName, setEditingName] = useState(false);
                 const [newName, setNewName] = useState(userProfile.username);
-                const [localSearchName, setLocalSearchName] = useState('');
                 const unlocked = getUnlockedAchievements();
-                
-                const addFriend = () => {
-                    const trimmedName = localSearchName.trim();
-                    if (!trimmedName) {
-                        if (tg.showAlert) tg.showAlert('Введите имя пользователя');
-                        return;
-                    }
-                    
-                    if (friends.some(f => f.username.toLowerCase() === trimmedName.toLowerCase())) {
-                        if (tg.showAlert) tg.showAlert('Этот друг уже добавлен!');
-                        return;
-                    }
-                    
-                    if (trimmedName.toLowerCase() === userProfile.username.toLowerCase()) {
-                        if (tg.showAlert) tg.showAlert('Нельзя добавить самого себя!');
-                        return;
-                    }
-                    
-                    setFriends([...friends, { username: trimmedName, since: new Date().toISOString() }]);
-                    if (tg.showAlert) tg.showAlert(`Друг ${trimmedName} добавлен!`);
-                    setLocalSearchName('');
-                };
                 
                 return (
                     <div className="space-y-4">
@@ -986,37 +955,6 @@
                                 </label>
                             </div>
                         </div>
-                        <div className="bg-white rounded-xl shadow-lg p-4">
-                            <h3 className="text-lg font-bold mb-3">👥 Друзья ({friends.length})</h3>
-                            <div className="flex gap-2 mb-3">
-                                <input 
-                                    type="text" 
-                                    value={localSearchName} 
-                                    onChange={(e) => setLocalSearchName(e.target.value)} 
-                                    onKeyPress={(e) => e.key === 'Enter' && addFriend()}
-                                    placeholder="Имя пользователя" 
-                                    className="flex-1 px-3 py-2 border rounded-lg text-sm" 
-                                />
-                                <button onClick={addFriend} className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm whitespace-nowrap">Добавить</button>
-                            </div>
-                            {friends.length > 0 && (
-                                <div className="space-y-2">
-                                    {friends.map((friend, idx) => (
-                                        <div key={idx} className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
-                                            <div className="flex-1">
-                                                <div className="font-semibold text-sm">{friend.username}</div>
-                                                <div className="text-xs text-gray-600">Дружите с {new Date(friend.since).toLocaleDateString('ru-RU')}</div>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <button onClick={() => setViewingFriend(friend)} className="px-3 py-1 bg-purple-600 text-white rounded text-xs">Профиль</button>
-                                                <button onClick={() => setFriends(friends.filter((_, i) => i !== idx))} className="text-red-500 text-sm px-2">✕</button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                            {friends.length === 0 && <div className="text-center text-gray-500 text-sm py-4">Добавьте друзей!</div>}
-                        </div>
                     </div>
                 );
             };
@@ -1059,32 +997,6 @@
                         {currentTab === 'profile' && <ProfileView />}
                     </div>
                     <PracticeModal />
-                    {viewingFriend && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
-                                <div className="bg-gradient-to-r from-purple-600 to-orange-600 text-white p-4 flex justify-between rounded-t-xl">
-                                    <h2 className="text-lg font-bold">Профиль друга</h2>
-                                    <button onClick={() => setViewingFriend(null)} className="text-2xl">✕</button>
-                                </div>
-                                <div className="p-6">
-                                    <div className="flex items-center gap-4 mb-6">
-                                        <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-orange-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                                            {viewingFriend.username[0]?.toUpperCase()}
-                                        </div>
-                                        <div>
-                                            <h3 className="text-xl font-bold">{viewingFriend.username}</h3>
-                                            <p className="text-sm text-gray-600">Дружите с {new Date(viewingFriend.since).toLocaleDateString('ru-RU')}</p>
-                                        </div>
-                                    </div>
-                                    <div className="bg-blue-50 rounded-lg p-4 text-center">
-                                        <p className="text-sm text-gray-600 mb-2">📊 Полная статистика друга</p>
-                                        <p className="text-xs text-gray-500">Для просмотра статистики друзей требуется серверная часть приложения.</p>
-                                        <p className="text-xs text-gray-500 mt-2">Функция будет доступна в следующих обновлениях! 🚀</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </div>
             );
         };
