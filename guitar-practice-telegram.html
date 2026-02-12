@@ -284,18 +284,68 @@
                     if (telegramUser) setUserProfile(prev => ({ ...prev, username: telegramUser.username || telegramUser.first_name || 'Гитарист', avatar: telegramUser.photo_url || '' }));
                     
                     if (tg.CloudStorage) {
-                        tg.CloudStorage.getItems(['practiceData', 'learnedSongs', 'toLearnSongs', 'darkTheme', 'userProfile', 'notes'], (error, result) => {
+                        // Загрузить метаданные о месяцах
+                        tg.CloudStorage.getItems(['practiceMonths', 'learnedSongs', 'toLearnSongs', 'darkTheme', 'userProfile', 'notes'], (error, result) => {
                             if (!error && result) {
-                                if (result.practiceData) setPracticeData(JSON.parse(result.practiceData));
+                                // Загрузить данные песен и настроек
                                 if (result.learnedSongs) setLearnedSongs(JSON.parse(result.learnedSongs));
                                 if (result.toLearnSongs) setToLearnSongs(JSON.parse(result.toLearnSongs));
                                 if (result.darkTheme) setDarkTheme(JSON.parse(result.darkTheme));
                                 if (result.userProfile) setUserProfile(prev => ({ ...prev, ...JSON.parse(result.userProfile), lastLogin: new Date().toISOString() }));
                                 if (result.notes) setNotes(JSON.parse(result.notes));
+                                
+                                // Загрузить данные практики по месяцам
+                                const loadPracticeData = () => {
+                                    // Проверить есть ли старые данные (для миграции)
+                                    tg.CloudStorage.getItem('practiceData', (err, oldData) => {
+                                        if (!err && oldData) {
+                                            // Мигрировать старые данные
+                                            try {
+                                                const parsed = JSON.parse(oldData);
+                                                setPracticeData(parsed);
+                                                console.log('✅ Загружены данные из старого формата. Будут мигрированы при следующем сохранении.');
+                                            } catch (e) {
+                                                console.error('Ошибка парсинга старых данных:', e);
+                                            }
+                                        }
+                                        
+                                        // Загрузить список месяцев
+                                        if (result.practiceMonths) {
+                                            try {
+                                                const months = JSON.parse(result.practiceMonths);
+                                                if (months.length > 0) {
+                                                    // Загрузить данные каждого месяца
+                                                    const keys = months.map(m => `practice_${m}`);
+                                                    tg.CloudStorage.getItems(keys, (err2, monthsData) => {
+                                                        if (!err2 && monthsData) {
+                                                            const combined = {};
+                                                            Object.keys(monthsData).forEach(key => {
+                                                                const monthData = JSON.parse(monthsData[key]);
+                                                                Object.assign(combined, monthData);
+                                                            });
+                                                            setPracticeData(combined);
+                                                            console.log(`✅ Загружено месяцев: ${months.length}, дней: ${Object.keys(combined).length}`);
+                                                        }
+                                                        setLoading(false);
+                                                    });
+                                                    return;
+                                                }
+                                            } catch (e) {
+                                                console.error('Ошибка загрузки месяцев:', e);
+                                            }
+                                        }
+                                        
+                                        setLoading(false);
+                                    });
+                                };
+                                
+                                loadPracticeData();
+                            } else {
+                                setLoading(false);
                             }
-                            setLoading(false);
                         });
                     } else {
+                        // LocalStorage - используем старый формат (нет лимита 4KB)
                         ['practiceData', 'learnedSongs', 'toLearnSongs', 'darkTheme', 'userProfile', 'notes'].forEach(key => {
                             const data = localStorage.getItem(key);
                             if (data) {
@@ -314,7 +364,57 @@
                 setDailyQuote(motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]);
             }, []);
 
-            useEffect(() => { if (!loading) { if (tg.CloudStorage) tg.CloudStorage.setItem('practiceData', JSON.stringify(practiceData)); else localStorage.setItem('practiceData', JSON.stringify(practiceData)); } }, [practiceData, loading]);
+            useEffect(() => { 
+                if (!loading) { 
+                    if (tg.CloudStorage) {
+                        // CloudStorage - разбиваем по месяцам (лимит 4KB на ключ)
+                        try {
+                            // Группируем данные по месяцам
+                            const dataByMonth = {};
+                            const months = new Set();
+                            
+                            Object.keys(practiceData).forEach(dateKey => {
+                                const yearMonth = dateKey.substring(0, 7); // "2026-02"
+                                months.add(yearMonth);
+                                
+                                if (!dataByMonth[yearMonth]) {
+                                    dataByMonth[yearMonth] = {};
+                                }
+                                dataByMonth[yearMonth][dateKey] = practiceData[dateKey];
+                            });
+                            
+                            // Сохраняем каждый месяц отдельно
+                            const monthsArray = Array.from(months);
+                            monthsArray.forEach(yearMonth => {
+                                const monthData = JSON.stringify(dataByMonth[yearMonth]);
+                                const sizeKB = (monthData.length / 1024).toFixed(2);
+                                
+                                if (monthData.length > 4000) {
+                                    console.warn(`⚠️ Месяц ${yearMonth} близок к лимиту: ${sizeKB} KB`);
+                                }
+                                
+                                tg.CloudStorage.setItem(`practice_${yearMonth}`, monthData, (err, success) => {
+                                    if (err) {
+                                        console.error(`Ошибка сохранения ${yearMonth}:`, err);
+                                    }
+                                });
+                            });
+                            
+                            // Сохраняем список месяцев
+                            tg.CloudStorage.setItem('practiceMonths', JSON.stringify(monthsArray));
+                            
+                            // Удаляем старый ключ (миграция)
+                            tg.CloudStorage.removeItem('practiceData', () => {});
+                            
+                        } catch (e) {
+                            console.error('Ошибка сохранения практики:', e);
+                        }
+                    } else {
+                        // LocalStorage - сохраняем как есть (нет лимита 4KB)
+                        localStorage.setItem('practiceData', JSON.stringify(practiceData)); 
+                    }
+                } 
+            }, [practiceData, loading]);
             useEffect(() => { if (!loading) { if (tg.CloudStorage) tg.CloudStorage.setItem('darkTheme', JSON.stringify(darkTheme)); else localStorage.setItem('darkTheme', JSON.stringify(darkTheme)); if (darkTheme) document.body.classList.add('dark-theme'); else document.body.classList.remove('dark-theme'); } }, [darkTheme, loading]);
             useEffect(() => { if (!loading) { if (tg.CloudStorage) tg.CloudStorage.setItem('learnedSongs', JSON.stringify(learnedSongs)); else localStorage.setItem('learnedSongs', JSON.stringify(learnedSongs)); } }, [learnedSongs, loading]);
             useEffect(() => { if (!loading) { if (tg.CloudStorage) tg.CloudStorage.setItem('toLearnSongs', JSON.stringify(toLearnSongs)); else localStorage.setItem('toLearnSongs', JSON.stringify(toLearnSongs)); } }, [toLearnSongs, loading]);
@@ -972,39 +1072,70 @@
                 // Функция расчета размера данных
                 const getStorageInfo = () => {
                     try {
-                        const practiceDataStr = localStorage.getItem('practiceData') || '{}';
-                        const userProfileStr = localStorage.getItem('userProfile') || '{}';
-                        const learnedSongsStr = localStorage.getItem('learnedSongs') || '[]';
-                        const toLearnSongsStr = localStorage.getItem('toLearnSongs') || '[]';
-                        const notesStr = localStorage.getItem('notes') || '[]';
+                        // Рассчитываем размер из текущих данных (state)
+                        const practiceDataStr = JSON.stringify(practiceData);
+                        const userProfileStr = JSON.stringify(userProfile);
+                        const learnedSongsStr = JSON.stringify(learnedSongs);
+                        const toLearnSongsStr = JSON.stringify(toLearnSongs);
+                        const notesStr = JSON.stringify(notes);
                         
                         const totalSize = practiceDataStr.length + userProfileStr.length + 
                                         learnedSongsStr.length + toLearnSongsStr.length + notesStr.length;
                         
                         const practiceDataSize = practiceDataStr.length;
-                        const practiceDataDays = Object.keys(JSON.parse(practiceDataStr)).length;
+                        const practiceDataDays = Object.keys(practiceData).length;
                         
-                        // Расчет процента заполнения (лимит ~5000 KB)
-                        const limitKB = 5000;
-                        const usedKB = totalSize / 1024;
+                        // Для CloudStorage: лимит 4KB на ключ, проверяем размер по месяцам
+                        let maxMonthSize = 0;
+                        let criticalMonth = '';
+                        
+                        if (tg.CloudStorage) {
+                            // Группируем по месяцам
+                            const dataByMonth = {};
+                            Object.keys(practiceData).forEach(dateKey => {
+                                const yearMonth = dateKey.substring(0, 7);
+                                if (!dataByMonth[yearMonth]) dataByMonth[yearMonth] = {};
+                                dataByMonth[yearMonth][dateKey] = practiceData[dateKey];
+                            });
+                            
+                            // Находим самый большой месяц
+                            Object.keys(dataByMonth).forEach(month => {
+                                const monthSize = JSON.stringify(dataByMonth[month]).length;
+                                if (monthSize > maxMonthSize) {
+                                    maxMonthSize = monthSize;
+                                    criticalMonth = month;
+                                }
+                            });
+                        }
+                        
+                        // Для CloudStorage используем лимит 4KB на месяц
+                        // Для LocalStorage используем лимит 5000 KB общий
+                        const limitKB = tg.CloudStorage ? 4 : 5000;
+                        const usedKB = tg.CloudStorage ? (maxMonthSize / 1024) : (totalSize / 1024);
                         const percentage = Math.min(100, (usedKB / limitKB) * 100);
                         
                         return {
-                            totalKB: usedKB.toFixed(2),
+                            totalKB: (totalSize / 1024).toFixed(2),
                             practiceDataKB: (practiceDataSize / 1024).toFixed(2),
+                            maxMonthKB: (maxMonthSize / 1024).toFixed(2),
+                            criticalMonth: criticalMonth,
                             daysCount: practiceDataDays,
                             percentage: percentage.toFixed(1),
-                            isWarning: percentage > 80,
-                            isCritical: percentage > 95
+                            isWarning: percentage > 70,
+                            isCritical: percentage > 85,
+                            usingCloudStorage: !!tg.CloudStorage
                         };
                     } catch (e) {
                         return {
                             totalKB: '0',
                             practiceDataKB: '0',
+                            maxMonthKB: '0',
+                            criticalMonth: '',
                             daysCount: 0,
                             percentage: '0',
                             isWarning: false,
-                            isCritical: false
+                            isCritical: false,
+                            usingCloudStorage: !!tg.CloudStorage
                         };
                     }
                 };
@@ -1100,11 +1231,25 @@
                         <div className="bg-white rounded-xl shadow-lg p-4">
                             <h3 className="text-lg font-bold mb-3">💾 Управление хранилищем</h3>
                             
+                            {storageInfo.usingCloudStorage && (
+                                <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+                                    <div className="font-semibold text-blue-800">☁️ Telegram CloudStorage</div>
+                                    <div className="text-blue-700">Лимит: 4 KB на месяц. Данные разбиты по месяцам.</div>
+                                </div>
+                            )}
+                            
                             <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
                                 <div className="flex justify-between items-center mb-2">
-                                    <div className="text-sm font-semibold text-gray-700">Использовано памяти</div>
-                                    <div className="text-sm font-bold text-blue-600">{storageInfo.totalKB} KB</div>
+                                    <div className="text-sm font-semibold text-gray-700">
+                                        {storageInfo.usingCloudStorage ? 'Самый большой месяц' : 'Использовано памяти'}
+                                    </div>
+                                    <div className="text-sm font-bold text-blue-600">
+                                        {storageInfo.usingCloudStorage ? storageInfo.maxMonthKB : storageInfo.totalKB} KB
+                                    </div>
                                 </div>
+                                {storageInfo.usingCloudStorage && storageInfo.criticalMonth && (
+                                    <div className="text-xs text-gray-600 mb-2">Месяц: {storageInfo.criticalMonth}</div>
+                                )}
                                 <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
                                     <div 
                                         className={`h-3 rounded-full transition-all duration-500 ${
@@ -1115,7 +1260,9 @@
                                         style={{width: `${storageInfo.percentage}%`}}
                                     ></div>
                                 </div>
-                                <div className="text-xs text-gray-600">{storageInfo.percentage}% из ~5000 KB</div>
+                                <div className="text-xs text-gray-600">
+                                    {storageInfo.percentage}% из ~{storageInfo.usingCloudStorage ? '4' : '5000'} KB {storageInfo.usingCloudStorage ? 'на месяц' : 'всего'}
+                                </div>
                             </div>
                             
                             {storageInfo.isWarning && (
@@ -1124,7 +1271,17 @@
                                         <span className="text-2xl">{storageInfo.isCritical ? '🔴' : '⚠️'}</span>
                                         <div>
                                             <div className="font-bold text-sm">{storageInfo.isCritical ? 'Критическое переполнение!' : 'Предупреждение о памяти'}</div>
-                                            <div className="text-xs">{storageInfo.isCritical ? 'Сохранение данных может не работать. Срочно очистите старые записи!' : 'Память заполнена более чем на 80%. Рекомендуется очистить старые данные.'}</div>
+                                            <div className="text-xs">
+                                                {storageInfo.isCritical ? (
+                                                    storageInfo.usingCloudStorage ? 
+                                                    `Месяц ${storageInfo.criticalMonth} близок к лимиту 4KB. Удалите записи из этого месяца.` : 
+                                                    'Сохранение данных может не работать. Срочно очистите старые записи!'
+                                                ) : (
+                                                    storageInfo.usingCloudStorage ?
+                                                    `Месяц ${storageInfo.criticalMonth} заполнен более чем на 70%. Рекомендуется очистить старые данные.` :
+                                                    'Память заполнена более чем на 70%. Рекомендуется очистить старые данные.'
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1136,8 +1293,8 @@
                                     <div className="font-bold">{storageInfo.daysCount}</div>
                                 </div>
                                 <div className="p-2 bg-gray-50 rounded">
-                                    <div className="text-xs text-gray-600">Размер практики</div>
-                                    <div className="font-bold">{storageInfo.practiceDataKB} KB</div>
+                                    <div className="text-xs text-gray-600">Всего данных</div>
+                                    <div className="font-bold">{storageInfo.totalKB} KB</div>
                                 </div>
                             </div>
                             
